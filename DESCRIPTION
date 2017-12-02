@@ -1,0 +1,36 @@
+Package: gdscIC50
+Title: Pipeline for GDSC Curve Fitting
+Version: 0.99.0
+Authors@R: c(person("Howard", "Lightfoot", email = "hl7@sanger.ac.uk", role = c("aut", "cre")),
+            person("Dieudonne", "van der Meer", email = "dvm@sanger.ac.uk", role = c("aut")),
+            person("Daniel J.", "Vis", email = "d.vis@nki.nl", role = "aut"),
+            person("Genome Research Limited", role = "cph"),
+            person("The Netherlands Cancer Institute (NKI)", role = "cph")
+            )
+Description: Fits dose response curves for data from the Genomics of Drug 
+             Sensitivity of Cancer (GDSC). The gdscIC50 package wrangles GDSC raw 
+             data before fitting sigmoidal dose reponse curves using a non-linear
+             mixed effects model. IC50 values and estimated along with the area 
+             under the curve (AUC). The curve fitting code is based on that originally
+             available as https://github.com/NKI-CCB/MixedIC50. The method is 
+             published in Vis, D.J. et al. Pharmacogenomics 2016, 17(7):691-700
+             https://www.ncbi.nlm.nih.gov/pubmed/27180993.
+Depends:
+    R (>= 3.0.0)
+License: GPL-3 + file LICENSE
+LazyData: true
+Imports:
+    dplyr,
+    tidyr,
+    ggplot2,
+    nlme,
+    caTools,
+    lazyeval
+RoxygenNote: 6.0.1
+Suggests: knitr,
+    rmarkdown,
+    testthat,
+    htmltools,
+    pander,
+    svglite
+VignetteBuilder: knitr
