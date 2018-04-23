@@ -1,8 +1,6 @@
 ---
 title: "GDSC raw data"
-output: 
-  rmarkdown::html_vignette:
-    df_print: "default"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,13 +9,14 @@ vignette: >
 
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(collapse = T,
-                      comment = "#>"
+                      comment = ""
                       )
 options(tibble.print_min = 4L, tibble.print_max = 4L)
-library(gdscIC50)
 ```
 
-### Experimental design
+GDSC raw data is available as a download from http://www.cancerrxgene.org/downloads. The dose response curve fitting uses the non-linear mixed effects model described in Vis, D.J. et al. Pharmacogenomics 2016, 17(7):691-700 (https://www.ncbi.nlm.nih.gov/pubmed/27180993). To fit the data with the model use the R package gdscIC50 (https://github.com/CancerRxGene/gdscIC50). 
+
+## Experimental design
 
  * GDSC drug screening uses 1536 well plates and 384 well plates.
  
@@ -33,25 +32,23 @@ library(gdscIC50)
  
  * Single drug treatments are referred to as library drugs - `L1`,`L2` etc. Each library is used in a titration to elicit the dose response characteristics for that compound with a particular cell line. 
  
- * Some GDSC data includes combination drug treatments. These are usually a titration of a library compound in combination with a fixed dose anchor compound - `L1 + A1` etc. Combination treatment data is not currently available from www.cancerrxgene.org
+ * Some GDSC data includes combination drug treatments. These are usually a titration of a library compound in combination with a fixed dose anchor compound - `L1 + A1` etc. Combination treatment data are not currently available from www.cancerrxgene.org
  
 For more details on the tags see below.
  
-### GDSC raw data format
+## GDSC raw data format
  
-GDSC raw data is distributed as a csv file which can then be loaded as a data frame. The `gdsc_example` data contains the minimum columns for the GDSC raw data to work wth the gdscdatar package. Other GDSC data sets may contain additional columns. 
-
-Not all well positions per plate represented in public data sets because some drug treatments are part of private collaborations.
+GDSC raw data is distributed as a csv file which can then be loaded as a data frame. The `gdsc_example` dataset contains the minimum columns for the GDSC raw data to work wth the gdscIC50 package. Other GDSC data sets may contain additional columns. Not all well positions per plate are represented in public data sets because some drug treatments are part of private collaborations.
 
 ```{r}
+library(gdscIC50)
 data("gdsc_example")
-gdsc_example[99:102,]
+gdsc_example[99:100,]
 ```
  
-### GDSC raw data definitions
+## GDSC raw data definitions
 
-Each row in the raw data represents a single well of the plate, however, there may be more than one row per well if there is more than one tag for that position in the drug set.
-
+Each row in the raw data represents a single well of a plate. However, there may be more than one row per well if there is more than one tag for that position in the drug set, e.g. this will happen if a well receives a combnination of treatments.
 
 ```{r, echo = FALSE}
 raw_data_description <- data.frame(
@@ -86,11 +83,8 @@ raw_data_description <- data.frame(
 knitr::kable(raw_data_description, align = c('l','l'))
 ```
 
-### Single compound and combination treatments
 
-
-
-### The TAG column 
+## The TAG column 
 
  * Drug treated wells will have entries in the `DRUG_ID` and `CONC` fields.
  
@@ -106,7 +100,7 @@ knitr::kable(raw_data_description, align = c('l','l'))
  
 Examples of the tags currently in use is given below.
 
-#### Drug treated wells:
+### Drug treated wells:
 
 ```{r, echo = F}
 drug_treated_tags <- data.frame(
@@ -123,7 +117,7 @@ drug_treated_tags <- data.frame(
 pander::pander(drug_treated_tags, justify = 'll')
 ```
 
-#### Control wells:
+### Control wells:
 
 ```{r, echo = F}
 control_tags <- data.frame(
@@ -142,4 +136,3 @@ control_tags <- data.frame(
 ```{r, echo=FALSE, results='asis'}
 pander::pander(control_tags, justify = 'll')
 ```
---------------------------------------------------------------------------------
