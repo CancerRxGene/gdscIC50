@@ -471,13 +471,6 @@ condenseWellPosition <- function(position_data){
       slice(1) %>% 
       select_(~CONC)
     
-    lib_conc_analysis <- libraries %>% 
-      mutate(lib_number = as.numeric(sub("L(\\d+)", "\\1", lib_drug))) %>% 
-      select_(~lib_number, ~CONC) %>%
-      arrange(lib_number) %>% 
-      slice(1) %>% 
-      select_(~CONC)
-    
     anchors <- anchors %>% 
       mutate(anchor = paste(.$anchor, collapse = "|"), 
              treatment_anch = treatment,
