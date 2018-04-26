@@ -226,6 +226,7 @@ logist5 <- stats::selfStart( ~ (1-ANCHOR_VIAB)+(ANCHOR_VIAB/(1 + exp(-(x - xmid)
 #' @param scal scale parameter of logistic curve
 #'
 #' @return integral value
+#' @export
 getIntegral <- function(x,xmid,scal){
   a <- xmid
   b <- scal

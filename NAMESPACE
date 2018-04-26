@@ -3,6 +3,7 @@
 export(calcNlmeStats)
 export(fitModelNlmeData)
 export(getIC50Matrix)
+export(getIntegral)
 export(getModelCoef)
 export(getTimeStamp)
 export(logist3)
