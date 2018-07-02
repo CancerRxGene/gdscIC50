@@ -819,11 +819,10 @@ prepNlmeData <- function(normalized_data, cl_id = "",
   
   
   # Add extra annotation
-  # Donny: Bug in this line if normalised data consist of data from multiple projects
-  # only a single project name will be used for all data
   if (!is.null(normalized_data$RESEARCH_PROJECT)){
-    nlme_data <- nlme_data %>% 
-      mutate_(RESEARCH_PROJECT = ~normalized_data$RESEARCH_PROJECT)
+      nlme_data <- nlme_data %>%
+          left_join(normalized_data %>% distinct(BARCODE, RESEARCH_PROJECT),
+                    by = "BARCODE")
   }
   
   return(nlme_data)
