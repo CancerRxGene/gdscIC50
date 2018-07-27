@@ -158,6 +158,7 @@ logist3 <- stats::selfStart( ~ 1/(1 + exp(-(x - xmid)/scal)),
                                value
                              },
                              parameters = c("xmid", "scal"))
+
 logistInit4 <- function(mCall, LHS, data){
     xy <- sortedXyData(mCall[["x"]], LHS, data)
     if(nrow(xy) < 3) {
