@@ -21,6 +21,8 @@
 # You should have received a copy of the GNU General Public License along with 
 # this program. If not, see <http://www.gnu.org/licenses/>. 
 ################################################################################
+#' @import nlme
+NULL
 
 groupNlmeData <- function(nlme_data) {
   gDat <- nlme::groupedData(y ~ x | drug/CL, data = nlme_data, FUN = mean,
@@ -156,6 +158,7 @@ logist3 <- stats::selfStart( ~ 1/(1 + exp(-(x - xmid)/scal)),
                                value
                              },
                              parameters = c("xmid", "scal"))
+
 logistInit4 <- function(mCall, LHS, data){
     xy <- sortedXyData(mCall[["x"]], LHS, data)
     if(nrow(xy) < 3) {
