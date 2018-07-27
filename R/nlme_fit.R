@@ -21,6 +21,8 @@
 # You should have received a copy of the GNU General Public License along with 
 # this program. If not, see <http://www.gnu.org/licenses/>. 
 ################################################################################
+#' @import nlme
+NULL
 
 groupNlmeData <- function(nlme_data) {
   gDat <- nlme::groupedData(y ~ x | drug/CL, data = nlme_data, FUN = mean,
@@ -157,6 +159,68 @@ logist3 <- stats::selfStart( ~ 1/(1 + exp(-(x - xmid)/scal)),
                              },
                              parameters = c("xmid", "scal"))
 
+logistInit4 <- function(mCall, LHS, data){
+    xy <- sortedXyData(mCall[["x"]], LHS, data)
+    if(nrow(xy) < 3) {
+        stop("Too few distinct input values to fit a logistic")
+    }
+    xmid <- NLSstClosestX(xy, 0.5 )
+    scal <- NLSstClosestX(xy, 0.75 ) - xmid
+    ANCHOR_VIAB <- 0.9
+    value <- c(ANCHOR_VIAB,xmid, scal)
+    names(value) <- mCall[c("xmid")]
+    value
+}
+
+#' logist4
+#' 
+#' The 2 parameter logistic function used to model the combination expected curve. 
+#' Takes the anchor viability into account
+#'
+#' @param x concentration of drug treatment usually on transformed scale. 
+#'   See setXFromConc().
+#' @param xmid location parameter of logistic curve
+#' @param scal scale parameter of logistic curve
+#' @param ANCHOR_VIAB the anchor viability
+#'
+#' @return a function object of class selfStart
+#' @export
+logist4 <- stats::selfStart( ~ (1-ANCHOR_VIAB)+(ANCHOR_VIAB/(1 + exp(-(x - xmid)/(scal)))), 
+                             initial = logistInit4, parameters = c("xmid"))
+
+
+logistInit5 <- function(mCall, LHS, data)
+{
+    xy <- sortedXyData(mCall[["x"]], LHS, data)
+    if(nrow(xy) < 3) {
+        stop("Too few distinct input values to fit a logistic")
+    }
+    xmid <- NLSstClosestX(xy, 0.5 )
+    scal <- NLSstClosestX(xy, 0.75 ) - xmid
+    # ANCHOR_VIAB <- 0.99
+    value <- c(ANCHOR_VIAB,scal,xmid)
+    names(value) <- mCall[c("xmid","scal")]
+    value
+}
+
+#' logist5
+#' 
+#' The 2 parameter logistic function used to model combination observed curve. 
+#'
+#' @param x concentration of drug treatment usually on transformed scale. 
+#'   See setXFromConc().
+#' @param SYNERGY_XMID location parameter of logistic curve of the combination observed
+#' @param LIBRARY_SACL scale parameter of logistic curve for the combination observed comes
+#'   from the library alone.
+#' @param ANCHOR_VIAB the anchor viability
+#'
+#' @return a function object of class selfStart
+#' @export
+logist5 <- stats::selfStart( ~ (1-ANCHOR_VIAB)+(ANCHOR_VIAB/(1 + exp(-(x - xmid)/(scal)))), 
+                             initial = logistInit5, parameters = c("xmid","scal"))
+
+
+
 #' getIntegral
 #'
 #' @param x concentration of drug treatment usually on transformed scale. 
@@ -165,6 +229,7 @@ logist3 <- stats::selfStart( ~ 1/(1 + exp(-(x - xmid)/scal)),
 #' @param scal scale parameter of logistic curve
 #'
 #' @return integral value
+#' @export
 getIntegral <- function(x,xmid,scal){
   a <- xmid
   b <- scal

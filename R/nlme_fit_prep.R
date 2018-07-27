@@ -1,6 +1,6 @@
 ################################################################################
-# Copyright (c) 2015, 2016, 2017 Genome Research Ltd. 
-# Copyright (c) 2015, 2016, 2017 The Netherlands Cancer Institute (NKI)
+# Copyright (c) 2015, 2016, 2017, 2018 Genome Research Ltd. 
+# Copyright (c) 2015, 2016, 2017, 2018 The Netherlands Cancer Institute (NKI)
 #  
 # Author: Howard Lightfoot <cancerrxgene@sanger.ac.uk> 
 # Author: Dieudonne van der Meer
@@ -317,7 +317,8 @@ condenseScreenData <- function(screen_data, neg_control, pos_control){
   
   drugset_layouts <- drugset_layouts %>% 
     group_by_(~DRUGSET_ID) %>% 
-    do(~ condenseDruggedLayout(.))
+    do(condensed_layouts = condenseDruggedLayout(.)) %>%
+    tidyr::unnest(condensed_layouts)
   
   screen_data <- screen_data %>% select_(~RESEARCH_PROJECT,
                          ~BARCODE, 
@@ -400,12 +401,12 @@ condenseWellPosition <- function(position_data){
                             CONC_lib = as.character(NA), 
                             CONC_lib_analysis = as.numeric(NA))
   } else {
-    # Check the dose level is the same for all libraries
-    if (length(unique(libraries$dose)) > 1){
-      stop(paste("Non matching dose levels for library drugs: drugset ",
-                 libraries$DRUGSET_ID, ", position ", libraries$POSITION,
-                 sep = ""))
-    }
+    # # Check the dose level is the same for all libraries
+    # if (length(unique(libraries$dose)) > 1){
+    #   stop(paste("Non matching dose levels for library drugs: drugset ",
+    #              libraries$DRUGSET_ID, ", position ", libraries$POSITION,
+    #              sep = ""))
+    # }
     # Check all treatments are the same
     if (length(unique(libraries$treatment)) > 1){
       stop(paste("Non matching treatments for library drugs: drugset ",
@@ -416,13 +417,15 @@ condenseWellPosition <- function(position_data){
     # Select the arbitrary analysis concentration by the library number
     # L1 before L2 before L3 etc.
     lib_conc_analysis <- libraries %>% 
-        select_(~lib_drug, ~CONC) %>%
-        arrange(~lib_drug) %>% 
+      mutate(lib_number = as.numeric(sub("L(\\d+)", "\\1", lib_drug))) %>% 
+        select_(~lib_number, ~CONC) %>%
+        arrange(lib_number) %>% 
         slice(1) %>% 
         select_(~CONC)
     
     libraries <- libraries %>% 
       mutate(lib_drug = paste(.$lib_drug, collapse = "|"), 
+             dose = paste(.$dose, collapse = "|"),
              treatment_lib = treatment,
              DRUG_ID_lib = paste(.$DRUG_ID, collapse = "|"), 
              CONC_lib = paste(.$CONC, collapse = "|"),
@@ -462,10 +465,18 @@ condenseWellPosition <- function(position_data){
     }
     
     anch_conc_analysis <- anchors %>% 
-        select_(~anchor, ~CONC) %>%
-        arrange_(~anchor) %>% 
-        slice(1) %>% 
-        select_(~CONC)
+      mutate(anch_number = as.numeric(sub("A(\\d+)", "\\1", anchor))) %>% 
+      select_(~anch_number, ~CONC) %>%
+      arrange_(~anch_number) %>% 
+      slice(1) %>% 
+      select_(~CONC)
+    
+    lib_conc_analysis <- libraries %>% 
+      mutate(lib_number = as.numeric(sub("L(\\d+)", "\\1", lib_drug))) %>% 
+      select_(~lib_number, ~CONC_lib) %>%
+      arrange(lib_number) %>% 
+      slice(1) %>% 
+      select_(~CONC_lib)
     
     anchors <- anchors %>% 
       mutate(anchor = paste(.$anchor, collapse = "|"), 
@@ -819,11 +830,10 @@ prepNlmeData <- function(normalized_data, cl_id = "",
   
   
   # Add extra annotation
-  # Donny: Bug in this line if normalised data consist of data from multiple projects
-  # only a single project name will be used for all data
   if (!is.null(normalized_data$RESEARCH_PROJECT)){
-    nlme_data <- nlme_data %>% 
-      mutate_(RESEARCH_PROJECT = ~normalized_data$RESEARCH_PROJECT)
+      nlme_data <- nlme_data %>%
+          left_join(normalized_data %>% distinct(BARCODE, RESEARCH_PROJECT),
+                    by = "BARCODE")
   }
   
   return(nlme_data)
