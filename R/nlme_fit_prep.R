@@ -1,6 +1,6 @@
 ################################################################################
-# Copyright (c) 2015, 2016, 2017 Genome Research Ltd. 
-# Copyright (c) 2015, 2016, 2017 The Netherlands Cancer Institute (NKI)
+# Copyright (c) 2015, 2016, 2017, 2018 Genome Research Ltd. 
+# Copyright (c) 2015, 2016, 2017, 2018 The Netherlands Cancer Institute (NKI)
 #  
 # Author: Howard Lightfoot <cancerrxgene@sanger.ac.uk> 
 # Author: Dieudonne van der Meer
