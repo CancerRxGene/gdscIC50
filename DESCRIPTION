@@ -1,6 +1,6 @@
 Package: gdscIC50
 Title: Pipeline for GDSC Curve Fitting
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: c(person("Howard", "Lightfoot", email = "hl7@sanger.ac.uk", role = c("aut", "cre")),
             person("Dieudonne", "van der Meer", email = "dvm@sanger.ac.uk", role = c("aut")),
             person("Daniel J.", "Vis", email = "d.vis@nki.nl", role = "aut"),
