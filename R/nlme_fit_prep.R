@@ -318,7 +318,7 @@ condenseScreenData <- function(screen_data, neg_control, pos_control){
   drugset_layouts <- drugset_layouts %>% 
     group_by_(~DRUGSET_ID) %>% 
     do(condensed_layouts = condenseDruggedLayout(.)) %>%
-    unnest(condensed_layouts)
+    tidyr::unnest(condensed_layouts)
   
   screen_data <- screen_data %>% select_(~RESEARCH_PROJECT,
                          ~BARCODE, 
