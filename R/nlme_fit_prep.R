@@ -78,7 +78,7 @@ removeFailedDrugs <- function(myDat){
 #' @export
 removeMissingDrugs <- function(myDat){
   na_libs <- myDat %>%
-    filter_(~grepl("^(L|R)\\d+", TAG)) %>% 
+    filter_(~grepl("^(L|R|A)\\d+", TAG)) %>% 
     filter_(~is.na(DRUG_ID))
   myDat <- anti_join(myDat, na_libs, by = c("SCAN_ID", "POSITION"))
   return(myDat)
