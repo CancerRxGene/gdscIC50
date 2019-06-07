@@ -1,6 +1,6 @@
 Package: gdscIC50
 Title: Pipeline for GDSC Curve Fitting
-Version: 0.99.2
+Version: 0.99.3
 Authors@R: c(person("Howard", "Lightfoot", email = "hl7@sanger.ac.uk", role = c("aut", "cre")),
             person("Dieudonne", "van der Meer", email = "dvm@sanger.ac.uk", role = c("aut")),
             person("Daniel J.", "Vis", email = "d.vis@nki.nl", role = "aut"),
@@ -26,7 +26,7 @@ Imports:
     nlme,
     caTools,
     lazyeval
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Suggests: knitr,
     rmarkdown,
     testthat,
@@ -34,3 +34,4 @@ Suggests: knitr,
     pander,
     svglite
 VignetteBuilder: knitr
+Encoding: UTF-8

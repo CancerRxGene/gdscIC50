@@ -4,8 +4,8 @@
 \alias{prepNlmeData}
 \title{Converts GDSC normalized-data data frame to input format for nlme curve fit.}
 \usage{
-prepNlmeData(normalized_data, cl_id = "", drug_specifiers = c("DRUG_ID_lib",
-  "maxc"), include_combos = F)
+prepNlmeData(normalized_data, cl_id = "",
+  drug_specifiers = c("DRUG_ID_lib", "maxc"), include_combos = F)
 }
 \arguments{
 \item{normalized_data}{a GDSC normalized-data data frame.}

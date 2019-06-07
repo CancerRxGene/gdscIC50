@@ -4,7 +4,8 @@
 \alias{normalizeData}
 \title{Normalizes GDSC raw data intensities with respect to controls.}
 \usage{
-normalizeData(myDat, trim = T, neg_control = "NC-1", pos_control = "B")
+normalizeData(myDat, trim = T, neg_control = "NC-1",
+  pos_control = "B")
 }
 \arguments{
 \item{myDat}{a GDSC raw data data frame.}

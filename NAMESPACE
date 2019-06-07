@@ -2,10 +2,12 @@
 
 export(calcNlmeStats)
 export(fitModelNlmeData)
+export(getConcFromX)
 export(getIC50Matrix)
 export(getIntegral)
 export(getModelCoef)
 export(getTimeStamp)
+export(getXfromConc)
 export(logist3)
 export(logist4)
 export(logist5)
