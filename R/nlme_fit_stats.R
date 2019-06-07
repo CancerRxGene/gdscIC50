@@ -231,11 +231,36 @@ l3_model2 <- function(lx, maxc, xmid, scal){
   return(yhat)
 }
 
+#' getConcFromX
+#' 
+#' Convert from gdscIC50 x coordinates (used for fitting across multiple compounds)
+#' to micromolar concentration
+#'
+#'
+#' @param x a GDSCic50 x coordinate (maximum of 9)
+#' @param maxc the maximum micromolar concentration used in the dose response experiment.
+#'
+#' @return numeric - micromolar concentration
+#' @seealso \code{\link{getXFromConc}}
+#' 
+#' @export
 getConcFromX <- function(x, maxc) {
   xc <- maxc * 2 ^ (x - 9)
   return(xc)
 }
 
+#' getXFromConc
+#' 
+#' Convert from micromolar concentration to gdscIC50 x coordinates (used for 
+#' fitting across multiple compounds)
+#'
+#' @param xc a microomolar concentration corresponding to a dilution point in the dose response experiment.
+#' @param maxc the maximum micromolar concentration used in the dose response experiment.
+#'
+#' @return numeric x coordinate used in nlme model
+#' @seealso \code{\link{getConcFromX}}
+#' @export
+#' 
 getXfromConc <- function(xc, maxc) {
   x <- (log(xc / maxc)/log(2))+ 9
   return(x)
