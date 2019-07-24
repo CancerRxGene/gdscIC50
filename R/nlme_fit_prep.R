@@ -118,16 +118,16 @@ normalizeData <- function(myDat, trim = T, neg_control = 'NC-1',
   
   # Take account of historic data with no MASTER_CELL_ID column - use ends_with
   normalized_data <- myDat %>% 
-    filter_(~ grepl("(A|L|R)\\d+(-D\\d+)?-(S|C)", TAG)) %>%
+    filter_(~ grepl("(A|L|R|PC)\\d+(-D\\d+)?-(S|C)", TAG)) %>%
     select_(~SCAN_ID, ~BARCODE,  ~RESEARCH_PROJECT, ~DATE_CREATED, ~DRUGSET_ID,
             ~CELL_LINE_NAME, ~ends_with("CELL_ID"),  ~COSMIC_ID, ~POSITION,
             ~TAG, ~DRUG_ID, ~CONC, ~INTENSITY) %>%
-    mutate_(lib_drug = ~sub("((L|R)\\d+)(-D\\d+)?-(S|C)", "\\1", TAG),
+    mutate_(lib_drug = ~sub("((L|R|PC)\\d+)(-D\\d+)?-(S|C)", "\\1", TAG),
             lib_drug = ~ifelse(grepl("^A.+", lib_drug), yes = NA, no = lib_drug),
             anchor = ~sub("(A\\d+)-(S|C)", "\\1", TAG),
             anchor = ~ifelse(grepl("^(L|R).+", anchor), yes = NA, no = anchor),
-            dose = ~sub("(A|L|R)\\d+-?(D\\d+)?-(S|C)", "\\2", TAG),
-            treatment = ~sub("((A|L|R)\\d+)(-D\\d+)?-(S|C)", "\\4", TAG)
+            dose = ~sub("(A|L|R|PC)\\d+-?(D\\d+)?-(S|C)", "\\2", TAG),
+            treatment = ~sub("((A|L|R|PC)\\d+)(-D\\d+)?-(S|C)", "\\4", TAG)
     ) %>%
     select_(~-TAG) 
   
