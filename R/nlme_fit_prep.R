@@ -125,7 +125,7 @@ normalizeData <- function(myDat, trim = T, neg_control = 'NC-1',
     mutate_(lib_drug = ~sub("((L|R|PC)\\d+)(-D\\d+)?-(S|C)", "\\1", TAG),
             lib_drug = ~ifelse(grepl("^A.+", lib_drug), yes = NA, no = lib_drug),
             anchor = ~sub("(A\\d+)-(S|C)", "\\1", TAG),
-            anchor = ~ifelse(grepl("^(L|R).+", anchor), yes = NA, no = anchor),
+            anchor = ~ifelse(grepl("^(L|R|PC).+", anchor), yes = NA, no = anchor),
             dose = ~sub("(A|L|R|PC)\\d+-?(D\\d+)?-(S|C)", "\\2", TAG),
             treatment = ~sub("((A|L|R|PC)\\d+)(-D\\d+)?-(S|C)", "\\4", TAG)
     ) %>%
