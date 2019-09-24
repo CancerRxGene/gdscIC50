@@ -87,8 +87,17 @@ removeMissingDrugs <- function(myDat){
 #' Normalizes GDSC raw data intensities with respect to controls.
 #' 
 #' \code{normalizeData} returns normalized intensities for the drug treated
-#'   wells - column \code{normalized_intensity}. Replaces \code{TAG} column
-#'   with \code{lib_drug} and \code{dose} columns.
+#' wells - column \code{normalized_intensity}. 
+#' 
+#' Replaces \code{TAG} column with columns: \code{lib_drug}, \code{dose} , and 
+#'  \code{treatment} (single or combination - S or C respectively).
+#'   
+#' If anchor drug treatments (anchor + library combinations) exist in the data 
+#'   then additional columns are added: \code{DRUG_ID_anch}, \code{CONC_anch}
+#'   and \code{anchor}. 
+#'   
+#' Combination treatments (C) are treated as if the library alone is to be 
+#'   fitted.
 #'
 #' @param myDat a GDSC raw data data frame.
 #' @param trim logical indicating whether to trim normalized values to the range
@@ -118,16 +127,16 @@ normalizeData <- function(myDat, trim = T, neg_control = 'NC-1',
   
   # Take account of historic data with no MASTER_CELL_ID column - use ends_with
   normalized_data <- myDat %>% 
-    filter_(~ grepl("(A|L|R)\\d+(-D\\d+)?-(S|C)", TAG)) %>%
+    filter_(~ grepl("(A|L|R|PC)\\d+(-D\\d+)?-(S|C)", TAG)) %>%
     select_(~SCAN_ID, ~BARCODE,  ~RESEARCH_PROJECT, ~DATE_CREATED, ~DRUGSET_ID,
             ~CELL_LINE_NAME, ~ends_with("CELL_ID"),  ~COSMIC_ID, ~POSITION,
             ~TAG, ~DRUG_ID, ~CONC, ~INTENSITY) %>%
-    mutate_(lib_drug = ~sub("((L|R)\\d+)(-D\\d+)?-(S|C)", "\\1", TAG),
+    mutate_(lib_drug = ~sub("((L|R|PC)\\d+)(-D\\d+)?-(S|C)", "\\1", TAG),
             lib_drug = ~ifelse(grepl("^A.+", lib_drug), yes = NA, no = lib_drug),
             anchor = ~sub("(A\\d+)-(S|C)", "\\1", TAG),
-            anchor = ~ifelse(grepl("^(L|R).+", anchor), yes = NA, no = anchor),
-            dose = ~sub("(A|L|R)\\d+-?(D\\d+)?-(S|C)", "\\2", TAG),
-            treatment = ~sub("((A|L|R)\\d+)(-D\\d+)?-(S|C)", "\\4", TAG)
+            anchor = ~ifelse(grepl("^(L|R|PC).+", anchor), yes = NA, no = anchor),
+            dose = ~sub("(A|L|R|PC)\\d+-?(D\\d+)?-(S|C)", "\\2", TAG),
+            treatment = ~sub("((A|L|R|PC)\\d+)(-D\\d+)?-(S|C)", "\\4", TAG)
     ) %>%
     select_(~-TAG) 
   
@@ -209,6 +218,8 @@ calcTagMean <- function(myDat, tag_name, mean_col_name = "tag_mean") {
 
 #' normalizeComboData
 #' 
+#' Now deprecated - using \code{normalizeData} will return identical results.
+#' 
 #' \code{normalizeComboData} returns normalized intensities for the drug treated
 #'   wells with respect to controls - column \code{normalized_intensity}.
 #'   
@@ -227,7 +238,8 @@ calcTagMean <- function(myDat, tag_name, mean_col_name = "tag_mean") {
 #'   lower end of the dynamic range.
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
-#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}, 
+#'   \code{\link{normalizeData}}
 #' 
 #' @examples
 #' data("gdsc_example") # Need a combo example here
