@@ -21,8 +21,18 @@ lower end of the dynamic range.}
 }
 \description{
 \code{normalizeData} returns normalized intensities for the drug treated
-  wells - column \code{normalized_intensity}. Replaces \code{TAG} column
-  with \code{lib_drug} and \code{dose} columns.
+wells - column \code{normalized_intensity}.
+}
+\details{
+Replaces \code{TAG} column with columns: \code{lib_drug}, \code{dose} , and 
+ \code{treatment} (single or combination - S or C respectively).
+  
+If anchor drug treatments (anchor + library combinations) exist in the data 
+  then additional columns are added: \code{DRUG_ID_anch}, \code{CONC_anch}
+  and \code{anchor}. 
+  
+Combination treatments (C) are treated as if the library alone is to be 
+  fitted.
 }
 \examples{
 data("gdsc_example")

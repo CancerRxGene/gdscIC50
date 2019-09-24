@@ -20,6 +20,9 @@ upper end of the dynamic range.}
 lower end of the dynamic range.}
 }
 \description{
+Now deprecated - using \code{normalizeData} will return identical results.
+}
+\details{
 \code{normalizeComboData} returns normalized intensities for the drug treated
   wells with respect to controls - column \code{normalized_intensity}.
   
@@ -40,5 +43,6 @@ nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
 }
 \seealso{
 \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
-  \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+  \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}, 
+  \code{\link{normalizeData}}
 }
