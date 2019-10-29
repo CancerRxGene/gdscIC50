@@ -105,7 +105,7 @@ fitModel <- function(gDat, vStart = c(8.886464, 1.495953 ), bLargeScale=TRUE, bS
     stop('Coding of relative viabilities seems incorrect; note that y is defined as 1-viability.')
   }
   if(bLargeScale){
-    fmv5 <- nlme::nlme(y ~ logist3(x, xmid, scal),
+    fmv5 <- nlme::nlme(y ~ gdscIC50::logist3(x, xmid, scal),
                        fixed= xmid+scal~1,
                        random=list(CL = nlme::pdSymm(xmid+scal~1), 
                                    drug = nlme::pdDiag(xmid~1)),
@@ -115,7 +115,7 @@ fitModel <- function(gDat, vStart = c(8.886464, 1.495953 ), bLargeScale=TRUE, bS
     }
     return(fmv5)
   }else{
-    fmv5 <- nlme::nlme(y ~ logist3(x, xmid, scal),
+    fmv5 <- nlme::nlme(y ~ gdscIC50::logist3(x, xmid, scal),
                        fixed = xmid + scal ~  1, 
                        random = list(CL = nlme::pdDiag(xmid + scal ~ 1),
                                      drug = nlme::pdDiag(xmid ~ 1)), 
@@ -146,18 +146,20 @@ fitModel <- function(gDat, vStart = c(8.886464, 1.495953 ), bLargeScale=TRUE, bS
 #' @return a function object of class selfStart
 #' @export
 logist3 <- stats::selfStart( ~ 1/(1 + exp(-(x - xmid)/scal)),
-                             initial = function(mCall, LHS, data){   
+                             initial = function(mCall, LHS, data){  
                                xy <- stats::sortedXyData(mCall[["x"]], LHS, data)
                                if(nrow(xy) < 3) {
                                  stop("Too few distinct input values to fit a logistic")
-                               }
+                                 }
                                xmid <- stats::NLSstClosestX(xy, 0.5 ) 
                                scal <- stats::NLSstClosestX(xy, 0.75 ) - xmid
                                value <- c(xmid, scal)
                                names(value) <- mCall[c("xmid", "scal")]
                                value
-                             },
-                             parameters = c("xmid", "scal"))
+                               },
+                             parameters = c("xmid", "scal")
+                             )
+
 
 logistInit4 <- function(mCall, LHS, data){
     xy <- sortedXyData(mCall[["x"]], LHS, data)
