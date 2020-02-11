@@ -1,6 +1,6 @@
 ################################################################################
-# Copyright (c) 2015, 2016, 2017, 2018 Genome Research Ltd. 
-# Copyright (c) 2015, 2016, 2017, 2018 The Netherlands Cancer Institute (NKI)
+# Copyright (c) 2015, 2016, 2017, 2018, 2019, 2020 Genome Research Ltd. 
+# Copyright (c) 2015, 2016, 2017, 2018, 2019, 2020 The Netherlands Cancer Institute (NKI)
 #  
 # Author: Howard Lightfoot <cancerrxgene@sanger.ac.uk> 
 # Author: Dieudonne van der Meer
@@ -81,6 +81,51 @@ removeMissingDrugs <- function(myDat){
     filter_(~grepl("^(L|R|A)\\d+", TAG)) %>% 
     filter_(~is.na(DRUG_ID))
   myDat <- anti_join(myDat, na_libs, by = c("SCAN_ID", "POSITION"))
+  return(myDat)
+}
+
+
+#' Removes -S treatments with more than one library drug 
+#' 
+#' In some later GDSC combination screens single treatments were sometimes
+#' composed of multiple library drugs. These cannot be processed as single 
+#' drug treatments for nlme dose response fitting and need to be filtered out
+#' from the raw screen data.
+#' 
+#' \code{removeMultiLibs} removes rows from GDSC raw data where the
+#'  \code{DRUG_ID} is NA.
+#' 
+#' @param myDat a GDSC raw data data frame.
+#' 
+#' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{normalizeData}},
+#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+#'  
+#' @examples
+#' \dontrun{
+#' data("gdsc_example")
+#' screen_data <- removeMultLibsDrugs(screen_data)
+#' norm_data <- normalizeData(screen_data)
+#' nlme_data <- prepNlmeData(norm_data, "COSMIC_ID")
+#' }
+#' @export
+removeMultiLibs <- function(myDat){
+  repl_pos <- myDat %>% 
+    filter(grepl("^L\\d+-D\\d+-S$", TAG)) %>% 
+    distinct(DRUGSET_ID, POSITION, TAG, DRUG_ID) %>% 
+    group_by(DRUGSET_ID, POSITION) %>% 
+    summarise(ntags = n()) %>% 
+    filter(ntags > 1)
+  
+  myDat <- myDat %>% 
+    anti_join(repl_pos %>% select(-ntags),
+              by = c("DRUGSET_ID", "POSITION"))
+  
+  print("Multiple libraries in -S well. Removing: ")
+  repl_pos %>% 
+    purrr::pmap(function(DRUGSET_ID, POSITION, TAG, ...) print(
+      paste("Drugset: ", DRUGSET_ID, ", position: ", POSITION)
+      )
+    )
   return(myDat)
 }
 
