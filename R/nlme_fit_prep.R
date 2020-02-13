@@ -102,7 +102,7 @@ removeMissingDrugs <- function(myDat){
 #'  
 #' @examples
 #' \dontrun{
-#' data("gdsc_example")
+#' screen_data <- screen_data %>% removeMissingDrugs() %>% removeFailedDrugs()
 #' screen_data <- removeMultLibsDrugs(screen_data)
 #' norm_data <- normalizeData(screen_data)
 #' nlme_data <- prepNlmeData(norm_data, "COSMIC_ID")
