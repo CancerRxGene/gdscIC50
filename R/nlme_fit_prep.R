@@ -123,7 +123,7 @@ removeMultiLibs <- function(myDat){
   print("Multiple libraries in -S well. Removing: ")
   repl_pos %>% 
     purrr::pmap(function(DRUGSET_ID, POSITION, TAG, ...) print(
-      paste("Drugset: ", DRUGSET_ID, ", position: ", POSITION)
+      paste0("Drugset: ", DRUGSET_ID, ", position: ", POSITION)
       )
     )
   return(myDat)
@@ -369,13 +369,16 @@ condenseScreenData <- function(screen_data, neg_control, pos_control){
                                          pos_control = pos_control)
   
   drugset_layouts <- screen_data %>% 
-    select_(~DRUGSET_ID, ~POSITION, ~TAG, ~DRUG_ID, ~CONC) %>% 
+    select(DRUGSET_ID, POSITION, TAG, DRUG_ID, CONC) %>% 
     distinct()
   
+  # drugset_layouts <- drugset_layouts %>% 
+  #   group_by_(~DRUGSET_ID) %>% 
+  #   do(condensed_layouts = condenseDruggedLayout(.)) %>%
+  #   tidyr::unnest(condensed_layouts)
   drugset_layouts <- drugset_layouts %>% 
-    group_by_(~DRUGSET_ID) %>% 
-    do(condensed_layouts = condenseDruggedLayout(.)) %>%
-    tidyr::unnest(condensed_layouts)
+    split(.$DRUGSET_ID) %>% 
+    map_df(condenseDruggedLayout)
   
   screen_data <- screen_data %>% select_(~RESEARCH_PROJECT,
                          ~BARCODE, 
@@ -411,9 +414,8 @@ condenseDruggedLayout <- function(drugset_layout){
   }
   
   condensed_drugged_layout <- drugset_layout %>%
-    group_by_(~POSITION) %>%
-    do_(new_layout = ~ condenseWellPosition(.)) %>%
-    tidyr::unnest_(~ new_layout)
+    split(.$POSITION) %>%
+    map_df(condenseWellPosition) 
   return(condensed_drugged_layout)
 }
 
@@ -565,8 +567,7 @@ condenseWellPosition <- function(position_data){
                               no = 'mismatch')
     ) %>%
     select_(~-treatment_lib, ~-treatment_anch) 
-  
-  if(nrow(condensed_position) != 1){
+    if(nrow(condensed_position) != 1){
     stop(paste("Failed to condense library and anchor drugs into one row: drugset",
                condensed_position$DRUGSET_ID,
                ", position ", condensed_position$POSITION, 
