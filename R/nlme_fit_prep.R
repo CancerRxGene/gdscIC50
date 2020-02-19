@@ -1,6 +1,6 @@
 ################################################################################
-# Copyright (c) 2015, 2016, 2017, 2018 Genome Research Ltd. 
-# Copyright (c) 2015, 2016, 2017, 2018 The Netherlands Cancer Institute (NKI)
+# Copyright (c) 2015, 2016, 2017, 2018, 2019, 2020 Genome Research Ltd. 
+# Copyright (c) 2015, 2016, 2017, 2018, 2019, 2020 The Netherlands Cancer Institute (NKI)
 #  
 # Author: Howard Lightfoot <cancerrxgene@sanger.ac.uk> 
 # Author: Dieudonne van der Meer
@@ -81,6 +81,51 @@ removeMissingDrugs <- function(myDat){
     filter_(~grepl("^(L|R|A)\\d+", TAG)) %>% 
     filter_(~is.na(DRUG_ID))
   myDat <- anti_join(myDat, na_libs, by = c("SCAN_ID", "POSITION"))
+  return(myDat)
+}
+
+
+#' Removes -S treatments with more than one library drug 
+#' 
+#' In some later GDSC combination screens single treatments were sometimes
+#' composed of multiple library drugs. These cannot be processed as single 
+#' drug treatments for nlme dose response fitting and need to be filtered out
+#' from the raw screen data.
+#' 
+#' \code{removeMultiLibs} removes rows from GDSC raw data where the
+#'  \code{DRUG_ID} is NA.
+#' 
+#' @param myDat a GDSC raw data data frame.
+#' 
+#' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{normalizeData}},
+#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+#'  
+#' @examples
+#' \dontrun{
+#' screen_data <- screen_data %>% removeMissingDrugs() %>% removeFailedDrugs()
+#' screen_data <- removeMultLibsDrugs(screen_data)
+#' norm_data <- normalizeData(screen_data)
+#' nlme_data <- prepNlmeData(norm_data, "COSMIC_ID")
+#' }
+#' @export
+removeMultiLibs <- function(myDat){
+  repl_pos <- myDat %>% 
+    filter(grepl("^L\\d+-D\\d+-S$", TAG)) %>% 
+    distinct(DRUGSET_ID, POSITION, TAG, DRUG_ID) %>% 
+    group_by(DRUGSET_ID, POSITION) %>% 
+    summarise(ntags = n()) %>% 
+    filter(ntags > 1)
+  
+  myDat <- myDat %>% 
+    anti_join(repl_pos %>% select(-ntags),
+              by = c("DRUGSET_ID", "POSITION"))
+  
+  print("Multiple libraries in -S well. Removing: ")
+  repl_pos %>% 
+    purrr::pmap(function(DRUGSET_ID, POSITION, TAG, ...) print(
+      paste0("Drugset: ", DRUGSET_ID, ", position: ", POSITION)
+      )
+    )
   return(myDat)
 }
 
@@ -324,13 +369,16 @@ condenseScreenData <- function(screen_data, neg_control, pos_control){
                                          pos_control = pos_control)
   
   drugset_layouts <- screen_data %>% 
-    select_(~DRUGSET_ID, ~POSITION, ~TAG, ~DRUG_ID, ~CONC) %>% 
+    select(DRUGSET_ID, POSITION, TAG, DRUG_ID, CONC) %>% 
     distinct()
   
+  # drugset_layouts <- drugset_layouts %>% 
+  #   group_by_(~DRUGSET_ID) %>% 
+  #   do(condensed_layouts = condenseDruggedLayout(.)) %>%
+  #   tidyr::unnest(condensed_layouts)
   drugset_layouts <- drugset_layouts %>% 
-    group_by_(~DRUGSET_ID) %>% 
-    do(condensed_layouts = condenseDruggedLayout(.)) %>%
-    tidyr::unnest(condensed_layouts)
+    split(.$DRUGSET_ID) %>% 
+    map_df(condenseDruggedLayout)
   
   screen_data <- screen_data %>% select_(~RESEARCH_PROJECT,
                          ~BARCODE, 
@@ -366,9 +414,8 @@ condenseDruggedLayout <- function(drugset_layout){
   }
   
   condensed_drugged_layout <- drugset_layout %>%
-    group_by_(~POSITION) %>%
-    do_(new_layout = ~ condenseWellPosition(.)) %>%
-    tidyr::unnest_(~ new_layout)
+    split(.$POSITION) %>%
+    map_df(condenseWellPosition) 
   return(condensed_drugged_layout)
 }
 
@@ -520,8 +567,7 @@ condenseWellPosition <- function(position_data){
                               no = 'mismatch')
     ) %>%
     select_(~-treatment_lib, ~-treatment_anch) 
-  
-  if(nrow(condensed_position) != 1){
+    if(nrow(condensed_position) != 1){
     stop(paste("Failed to condense library and anchor drugs into one row: drugset",
                condensed_position$DRUGSET_ID,
                ", position ", condensed_position$POSITION, 
