@@ -85,6 +85,42 @@ removeMissingDrugs <- function(myDat){
 }
 
 
+#' findMultiLibs
+#' 
+#' Print out positions of multi-library treatments e.g. L1-Dx-S + L2-Dx-S
+#' 
+#' In some later GDSC combination screens single treatments were sometimes
+#' composed of multiple library drugs. These cannot be processed as single 
+#' drug treatments for nlme dose response fitting.  These positions can be 
+#' filtered out using \code{\link{removeMultiLibs}}
+#' from the raw screen data.
+#'
+#' @param myDat data frame of GDSC screen data 
+#'
+#' @return dataframe of replicate positions
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' findMultiLibs(screen_data)
+#' }
+findMultiLibs <- function(myDat){
+  repl_pos <- myDat %>% 
+    filter(grepl("^L\\d+-D\\d+-S$", TAG)) %>% 
+    distinct(DRUGSET_ID, POSITION, TAG, DRUG_ID) %>% 
+    group_by(DRUGSET_ID, POSITION) %>% 
+    summarise(ntags = n()) %>% 
+    filter(ntags > 1)
+  
+  print("Multiple libraries in -S well. ")
+  repl_pos %>% 
+    purrr::pmap(function(DRUGSET_ID, POSITION, TAG, ...) print(
+      paste0("Drugset: ", DRUGSET_ID, ", position: ", POSITION)
+      )
+    )
+  return(repl_pos)
+}
+
 #' Removes -S treatments with more than one library drug 
 #' 
 #' In some later GDSC combination screens single treatments were sometimes
@@ -103,29 +139,17 @@ removeMissingDrugs <- function(myDat){
 #' @examples
 #' \dontrun{
 #' screen_data <- screen_data %>% removeMissingDrugs() %>% removeFailedDrugs()
-#' screen_data <- removeMultLibsDrugs(screen_data)
+#' screen_data <- removeMultiLibs(screen_data)
 #' norm_data <- normalizeData(screen_data)
 #' nlme_data <- prepNlmeData(norm_data, "COSMIC_ID")
 #' }
 #' @export
 removeMultiLibs <- function(myDat){
-  repl_pos <- myDat %>% 
-    filter(grepl("^L\\d+-D\\d+-S$", TAG)) %>% 
-    distinct(DRUGSET_ID, POSITION, TAG, DRUG_ID) %>% 
-    group_by(DRUGSET_ID, POSITION) %>% 
-    summarise(ntags = n()) %>% 
-    filter(ntags > 1)
-  
+  repl_pos <- findMultiLibs(myDat)
+  print("\nRemoved multilibs fom screening data\n")
   myDat <- myDat %>% 
     anti_join(repl_pos %>% select(-ntags),
               by = c("DRUGSET_ID", "POSITION"))
-  
-  print("Multiple libraries in -S well. Removing: ")
-  repl_pos %>% 
-    purrr::pmap(function(DRUGSET_ID, POSITION, TAG, ...) print(
-      paste0("Drugset: ", DRUGSET_ID, ", position: ", POSITION)
-      )
-    )
   return(myDat)
 }
 
@@ -378,7 +402,7 @@ condenseScreenData <- function(screen_data, neg_control, pos_control){
   #   tidyr::unnest(condensed_layouts)
   drugset_layouts <- drugset_layouts %>% 
     split(.$DRUGSET_ID) %>% 
-    map_df(condenseDruggedLayout)
+    purrr::map_df(condenseDruggedLayout)
   
   screen_data <- screen_data %>% select_(~RESEARCH_PROJECT,
                          ~BARCODE, 
@@ -415,7 +439,7 @@ condenseDruggedLayout <- function(drugset_layout){
   
   condensed_drugged_layout <- drugset_layout %>%
     split(.$POSITION) %>%
-    map_df(condenseWellPosition) 
+    purrr::map_df(condenseWellPosition) 
   return(condensed_drugged_layout)
 }
 
