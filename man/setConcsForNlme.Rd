@@ -4,8 +4,7 @@
 \alias{setConcsForNlme}
 \title{Adds columns \code{maxc} and \code{x} to GDSC normalized-data data frame.}
 \usage{
-setConcsForNlme(normalized_data, group_conc_ranges = F,
-  conc_col = "CONC")
+setConcsForNlme(normalized_data, group_conc_ranges = F, conc_col = "CONC")
 }
 \arguments{
 \item{normalized_data}{a GDSC normalized-data data frame.}

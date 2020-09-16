@@ -4,8 +4,7 @@
 \alias{normalizeComboData}
 \title{normalizeComboData}
 \usage{
-normalizeComboData(myDat, trim = T, neg_control = "NC-1",
-  pos_control = "B")
+normalizeComboData(myDat, trim = T, neg_control = "NC-1", pos_control = "B")
 }
 \arguments{
 \item{myDat}{a GDSC raw data data frame.}

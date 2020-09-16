@@ -3,7 +3,6 @@
 \docType{package}
 \name{gdscIC50}
 \alias{gdscIC50}
-\alias{gdscIC50-package}
 \title{gdscIC50}
 \description{
 A package to prepare for and fit a non-linear mixed effects dose reponse model 

@@ -4,8 +4,12 @@
 \alias{fitModel}
 \title{fitModel}
 \usage{
-fitModel(gDat, vStart = c(8.886464, 1.495953), bLargeScale = TRUE,
-  bSilent = TRUE)
+fitModel(
+  gDat,
+  vStart = c(8.886464, 1.495953),
+  bLargeScale = TRUE,
+  bSilent = TRUE
+)
 }
 \arguments{
 \item{gDat}{grouped data frame input}

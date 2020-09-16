@@ -4,8 +4,12 @@
 \alias{normalizeMultiComboData}
 \title{normalizeMultiComboData}
 \usage{
-normalizeMultiComboData(screen_data, trim = T, neg_control = "NC-1",
-  pos_control = "B")
+normalizeMultiComboData(
+  screen_data,
+  trim = T,
+  neg_control = "NC-1",
+  pos_control = "B"
+)
 }
 \arguments{
 \item{screen_data}{a GDSC raw data data frame.}

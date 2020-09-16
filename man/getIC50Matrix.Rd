@@ -4,8 +4,12 @@
 \alias{getIC50Matrix}
 \title{Extract a matrix of IC50 values from a model statistics data frame.}
 \usage{
-getIC50Matrix(model_stats, drug_identifier = "drug", re_name = T,
-  measure = "IC50")
+getIC50Matrix(
+  model_stats,
+  drug_identifier = "drug",
+  re_name = T,
+  measure = "IC50"
+)
 }
 \arguments{
 \item{model_stats}{the results of \code{\link{calcNlmeStats}}.}

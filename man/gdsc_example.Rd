@@ -5,9 +5,11 @@
 \alias{gdsc_example}
 \title{Example raw data set from the Genomics of Drug Sensitivity in Cancer (GDSC) 
 project.}
-\format{A data frame with 57987 rows and 24 columns
+\format{
+A data frame with 57987 rows and 24 columns
 
-For more details on the data see \code{vignette("gdsc_raw_data_format")}}
+For more details on the data see \code{vignette("gdsc_raw_data_format")}
+}
 \usage{
 gdsc_example
 }
