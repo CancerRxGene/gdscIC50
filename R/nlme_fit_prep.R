@@ -292,7 +292,7 @@ calcTagMean <- function(myDat, tag_name, mean_col_name = "tag_mean") {
     stop(e2)
   }
   
-  tag_means <- tag_means %>% rename(.dots = stats::setNames("tag_mean", mean_col_name))
+  tag_means <- tag_means %>% rename(!!mean_col_name := tag_mean)
   
   return(tag_means)
 }
@@ -814,10 +814,9 @@ setConcsForNlme <- function(normalized_data,
       normalized_data["CONC"] <- normalized_data[conc_col]
   }
     
-  normalized_data <-normalized_data %>% 
+  normalized_data <- normalized_data %>% 
     setMaxConc(drug_specifiers = drug_specifiers) %>% 
-    setXFromConc
-  
+    setXFromConc()
   
   return(normalized_data)
 }
@@ -877,7 +876,7 @@ prepNlmeData <- function(normalized_data, cl_id = "",
   
   # Check normalized_data has the required columns
   e2 <- simpleError("Your normalized data does not contain the columns specified to make the drug column.")
-  if (!all(drug_specifiers %in% names(normalized_data))){
+  if (!all({{drug_specifiers}} %in% names(normalized_data))){
     stop(e2)
   }
   
@@ -890,16 +889,16 @@ prepNlmeData <- function(normalized_data, cl_id = "",
       filter(treatment == 'S', !is.na(lib_drug))
   }
   
-  if(!cl_id %in% c("COSMIC_ID", "CELL_ID", "MASTER_CELL_ID")){
+  if(!(cl_id) %in% c("COSMIC_ID", "CELL_ID", "MASTER_CELL_ID")){
       stop('choose a suitable cl_id: COSMIC_ID, MASTER_CELL_ID or CELL_ID')
 
   }
   nlme_data <- normalized_data %>% 
-      select(CELL_LINE_NAME, CL = one_of(cl_id), maxc, x, y = normalized_intensity, 
-          one_of(drug_specifiers), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos) %>% 
-    mutate(CL_SPEC = cl_id) %>% 
-    tidyr::unite(drug, from = drug_specifiers, sep = "_", remove = F) %>% 
-    mutate(drug_spec = paste(drug_specifiers, collapse = "+"),
+      select(CELL_LINE_NAME, CL = one_of({{cl_id}}), maxc, x, y = normalized_intensity, 
+          one_of({{drug_specifiers}}), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos) %>% 
+    mutate(CL_SPEC = {{cl_id}}) %>% 
+    tidyr::unite(col = drug, {{drug_specifiers}}, sep = "_", remove = F) %>% 
+    mutate(drug_spec = paste({{drug_specifiers}}, collapse = "+"),
            y =  1 - y,
            time_stamp = normalized_data$time_stamp[1],
            sw_version = normalized_data$sw_version[1]) %>% 
