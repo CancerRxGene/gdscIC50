@@ -84,6 +84,19 @@ removeMissingDrugs <- function(myDat){
   return(myDat)
 }
 
+#' Remove reference drugs from screen data
+#'
+#' @param myDat a GDSC raw data data frame.
+#'
+#' @return a GDSC raw data data frame with TAG s, such as R1-D1-S, removed.
+#' @export
+removeReferenceDrugs <- function(myDat){
+  ref_libs <- myDat %>%
+    filter(grepl("^(R)\\d+", TAG))
+  myDat <- anti_join(myDat, ref_libs, by = c("SCAN_ID", "POSITION"))
+  return(myDat)
+}
+
 
 #' findMultiLibs
 #' 
