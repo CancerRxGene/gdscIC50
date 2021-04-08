@@ -79,8 +79,9 @@ removeFailedDrugs <- function(myDat){
 removeMissingDrugs <- function(myDat){
   na_libs <- myDat %>%
     filter(grepl("^(L|R|A)\\d+", TAG)) %>% 
-    filter(is.na(DRUG_ID))
-  myDat <- anti_join(myDat, na_libs, by = c("SCAN_ID", "POSITION"))
+    filter(is.na(DRUG_ID)) %>% 
+    distinct(SCAN_ID, POSITION, TAG)
+  myDat <- anti_join(myDat, na_libs, by = c("SCAN_ID", "POSITION", "TAG"))
   return(myDat)
 }
 
@@ -490,7 +491,7 @@ condenseWellPosition <- function(position_data){
       arrange( lib_drug)  
   
   if (nrow(libraries) == 0){
-    libraries <- data_frame(lib_drug = as.character(NA),
+    libraries <- tibble(lib_drug = as.character(NA),
                             dose = as.character(NA),
                             treatment_lib = as.character(NA),
                             DRUG_ID_lib = as.character(NA),
@@ -512,12 +513,17 @@ condenseWellPosition <- function(position_data){
     
     # Select the arbitrary analysis concentration by the library number
     # L1 before L2 before L3 etc.
+    tryCatch({
     lib_conc_analysis <- libraries %>% 
       mutate(lib_number = as.numeric(sub("L(\\d+)", "\\1", lib_drug))) %>% 
         select(lib_number, CONC) %>%
         arrange(lib_number) %>% 
         slice(1) %>% 
         select(CONC)
+    }, warning=function(w) {
+      cat(libraries)
+      stop()
+    })
     
     libraries <- libraries %>% 
       mutate(lib_drug = paste(.$lib_drug, collapse = "|"), 
@@ -540,14 +546,13 @@ condenseWellPosition <- function(position_data){
   anchors <- position_data %>% 
       filter( !is.na(anchor)) %>%
       select(DRUG_ID, CONC, anchor, treatment) %>%
-      
       # This arrange is important for the rare case where the same DRUG_ID is 
       # used multiple times in as an S treatment (e.g. A21-S and A22-S combined
       # into a single well as 'S'-treatment, where A21 and A22 are the same DRUG_ID)
       arrange(anchor) 
   
   if (nrow(anchors) == 0){
-    anchors <- data_frame(anchor = as.character(NA),
+    anchors <- tibble(anchor = as.character(NA),
                           treatment_anch = as.character(NA),
                           DRUG_ID_anch = as.character(NA),
                           CONC_anch = as.character(NA), 
@@ -612,145 +617,6 @@ condenseWellPosition <- function(position_data){
   }
   return(condensed_position)
 }
-
-
-# condenseNormalizedPosition <- function(position_data){
-#   
-#   position_annotation <- position_data %>%
-#     select(SCAN_ID,
-#            BARCODE,
-#            DATE_CREATED,
-#            DRUGSET_ID,
-#            CELL_LINE_NAME,
-#            CELL_ID,
-#            COSMIC_ID,
-#            POSITION,
-#            INTENSITY) %>%
-#     distinct()
-#   
-#   if (nrow(position_annotation) != 1){
-#     stop(paste("Cannot condense position data where annotation is not unique: scan_id ",
-#                paste(foo$SCAN_ID, collapse = " "),
-#                "; position ",
-#                paste(foo$POSITION, collapse = " "),
-#                sep = ""
-#     )
-#     )
-#   }
-#   
-#   libraries <- position_data %>% filter(!is.na(lib_drug)) %>%
-#     select(DRUG_ID, CONC, lib_drug, dose, treatment)
-#   
-#   if (nrow(libraries) == 0){
-#     libraries <- position_annotation %>% 
-#       mutate(lib_drug = NA,
-#              dose = NA,
-#              treatment_lib = NA,
-#              DRUG_ID_lib = NA,
-#              CONC_lib = NA, 
-#              CONC_lib_analysis = NA
-#       )
-#   } else {
-#     
-#     lib_conc_analysis <- libraries %>% select(lib_drug, CONC) %>%
-#       arrange(lib_drug) %>% slice(1) %>% select(CONC)
-#     
-#     libraries <- libraries %>% 
-#       mutate(lib_drug = paste(.$lib_drug, collapse = "|"), 
-#              dose = ifelse(length(unique(dose)) == 1,
-#                            yes = unique(dose),
-#                            no ='mismatch'),
-#              treatment_lib = ifelse(length(unique(treatment)) == 1,
-#                                     yes = unique(treatment),
-#                                     no = 'mismatch'),
-#              DRUG_ID_lib = paste(.$DRUG_ID, collapse = "|"), 
-#              CONC_lib = paste(.$CONC, collapse = "|"),
-#              CONC_lib_analysis = as.numeric(lib_conc_analysis$CONC)
-#       ) %>% 
-#       select(-CONC, -DRUG_ID, -treatment) %>%
-#       distinct()
-#     
-#     stopifnot(nrow(libraries) < 2)
-#     
-#     if (nrow(libraries) == 1 && libraries$dose == 'mismatch'){
-#       stop(paste("Library doses mismatch: scan id ", libraries$SCAN_ID, 
-#                  ", drugset ", libraries$DRUGSET_ID,
-#                  ", position ", libraries$POSITION, sep = "")
-#       )
-#     }
-#     if (nrow(libraries) == 1 && libraries$treatment_lib == 'mismatch'){
-#       stop(paste("Library treatments (-C or -S) mismatch: scan id ", libraries$SCAN_ID, 
-#                  ", drugset ", libraries$DRUGSET_ID,
-#                  ", position ", libraries$POSITION, sep = "")
-#       )
-#     }
-#     libraries <- cbind(position_annotation, libraries)
-#   }
-#   
-#   anchors <- position_data %>% filter(!is.na(anchor)) %>%
-#     select(DRUG_ID, CONC, anchor, treatment)
-#   
-#   if (nrow(anchors) == 0){
-#     anchors <- position_annotation %>% 
-#       mutate(anchor = NA,
-#              treatment_anch = NA,
-#              DRUG_ID_anch = NA,
-#              CONC_anch = NA, 
-#              CONC_anch_analysis = NA
-#       )
-#   }
-#   else{
-#     anch_conc_analysis <- anchors %>% select(anchor, CONC) %>%
-#       arrange(anchor) %>% slice(1) %>% select(CONC)
-#     
-#     anchors <- anchors %>% 
-#       mutate(anchor = paste(.$anchor, collapse = "|"), 
-#              treatment_anch = ifelse(length(unique(treatment)) == 1,
-#                                      yes = unique(treatment),
-#                                      no = 'mismatch'),
-#              DRUG_ID_anch = paste(.$DRUG_ID, collapse = "|"),
-#              CONC_anch = paste(.$CONC, collapse = "|"),
-#              CONC_anch_analysis = as.numeric(anch_conc_analysis$CONC)
-#       ) %>% 
-#       select(-CONC, -DRUG_ID, -treatment) %>%
-#       distinct()
-#     
-#     stopifnot(nrow(anchors) < 2)
-#     if (nrow(anchors) == 1 && anchors$treatment_anch == 'mismatch'){
-#       stop(paste("Anchor treatments (-C or -S) mismatch: scan id ", anchors$SCAN_ID, 
-#                  ", drugset ", anchors$DRUGSET_ID,
-#                  ", position ", anchors$POSITION, sep = "")
-#       )
-#     }
-#     
-#     anchors <- cbind(position_annotation, anchors)
-#   }
-#   
-#   normalized_position_data <- suppressMessages(inner_join(
-#     libraries, 
-#     anchors)) %>%
-#     mutate(treatment_lib = ifelse(is.na(treatment_lib) && !is.na(treatment_anch), 
-#                                   yes = treatment_anch, 
-#                                   no = treatment_lib)) %>%
-#     mutate(treatment_anch = ifelse(is.na(treatment_anch) && !is.na(treatment_lib), 
-#                                    yes = treatment_lib, 
-#                                    no = treatment_anch)) %>%
-#     mutate(treatment = ifelse(treatment_lib == treatment_anch,
-#                               yes = treatment_lib, 
-#                               no = 'mismatch')
-#     ) %>%
-#     select(-treatment_lib, -treatment_anch) 
-#   
-#   stopifnot(nrow(normalized_position_data) == 1)
-#   
-#   if (normalized_position_data$treatment == 'mismatch'){
-#     stop(paste("Treatments (-C or -S) mismatch: scan id ", normalized_position_data$SCAN_ID, 
-#                ", drugset ", normalized_position_data$DRUGSET_ID,
-#                ", position ", normalized_position_data$POSITION, sep = "")
-#     )
-#   }
-#   return(normalized_position_data)
-# }
 
 setMaxConc <- function(normalized_data, drug_specifiers){
   normalized_data %>% 
