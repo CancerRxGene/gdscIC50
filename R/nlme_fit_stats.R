@@ -49,54 +49,54 @@ NULL
 #' 
 #' @export
 getModelCoef <- function(nlme_model, nlme_data) {
-  drug_specifier <- nlme_data %>% select_(~drug_spec) %>% distinct()
+  drug_specifier <- nlme_data %>% select(drug_spec) %>% distinct()
   stopifnot(nrow(drug_specifier) == 1)
   drug_specifier <- strsplit(drug_specifier$drug_spec, "\\+")[[1]]
   model_coef <- stats::coef(nlme_model)
-  model_coef <- model_coef %>% mutate_(combo = ~rownames(.)) %>%
-    tidyr::separate_("combo", into = c("CL", "drug"), sep = "/", convert = T)
-  model_coef <- model_coef %>% mutate_(drug = ~ as.character(drug))
+  model_coef <- model_coef %>% mutate(combo = rownames(.)) %>%
+    tidyr::separate("combo", into = c("CL", "drug"), sep = "/", convert = T)
+  model_coef <- model_coef %>% mutate(drug =  as.character(drug))
   model_coef <- left_join(model_coef, nlme_data, by = c("CL", "drug") )
   return(model_coef)
 }
 
 calcIC50 <- function(model_coef) {
   model_coef <- model_coef %>%
-    mutate_(
-      IC50 = ~log(getConcFromX(xmid, maxc)))
+    mutate(
+      IC50 = log(getConcFromX(xmid, maxc)))
   return(model_coef)
 }
 
 calcAuc <- function(model_coef) {
   model_coef <- model_coef %>% 
-    group_by_(~CL, ~drug) %>% 
-    mutate_(xmin = ~min(x)) %>%
-    mutate_(xmax = ~max(x)) %>%
-    mutate_(auc = 
-              ~1 - (getIntegral(xmax, xmid, scal) - 
+    group_by(CL, drug) %>% 
+    mutate(xmin = min(x)) %>%
+    mutate(xmax = max(x)) %>%
+    mutate(auc = 
+              1 - (getIntegral(xmax, xmid, scal) - 
                       getIntegral(xmin, xmid, scal)) / (xmax - xmin))
   model_coef <- model_coef %>% 
     ungroup() %>%
-    select_(~-xmax, ~-xmin)
+    select(-xmax, -xmin)
   return(model_coef)
 }
 
 calcAucTrap <- function(model_stats) {
   model_stats <- model_stats %>% 
-    group_by_(~CL, ~drug) %>% arrange_(~x) %>% 
-    mutate_(area = ~ (max(x) - min(x)) * max(c(1,yhat))) %>% 
-    mutate_(AUCtrap = ~((caTools::trapz(x, 1 - yhat)) / area))
-  model_stats <- model_stats %>% ungroup() %>% select_(~-area)
+    group_by(CL, drug) %>% arrange(x) %>% 
+    mutate(area =  (max(x) - min(x)) * max(c(1,yhat))) %>% 
+    mutate(AUCtrap = ((caTools::trapz(x, 1 - yhat)) / area))
+  model_stats <- model_stats %>% ungroup() %>% select(-area)
   return(model_stats)
 }
 
 calcNlmeFit <- function(model_coef){
   model_coef <- model_coef %>%
-    group_by_(~CL, ~drug) %>%
-    mutate_(yhat = ~ logist3(x, xmid, scal))
+    group_by(CL, drug) %>%
+    mutate(yhat =  logist3(x, xmid, scal))
   attributes(model_coef$yhat) <- NULL
-  model_coef <- model_coef %>% mutate_(yres = ~y - yhat)
-  model_coef <- model_coef %>% mutate_(RMSE = ~sqrt(mean(yres ^ 2)))
+  model_coef <- model_coef %>% mutate(yres = y - yhat)
+  model_coef <- model_coef %>% mutate(RMSE = sqrt(mean(yres ^ 2)))
   model_coef <- model_coef %>% ungroup()
   return(model_coef)
 }
@@ -129,8 +129,8 @@ calcNlmeStats <- function (nlme_model, nlme_data) {
   model_coef <- getModelCoef(nlme_model = nlme_model, nlme_data = nlme_data)
   model_stats <- calcNlmeFit(model_coef)
   model_stats <- model_stats %>%
-    arrange_(~desc(x)) %>%
-    mutate_(x_micromol = ~getConcFromX(x, maxc))
+    arrange(desc(x)) %>%
+    mutate(x_micromol = getConcFromX(x, maxc))
   model_stats <- calcIC50(model_stats)
   model_stats <- calcAuc(model_stats)
   model_stats <- calcAucTrap(model_stats)
@@ -177,9 +177,9 @@ getIC50Matrix <- function(model_stats, drug_identifier = "drug",
   
   # Make sure there is a 1-to-1 correspondence between chosen drug identifier and the drug column
   possible_duplicates <- model_stats %>% 
-    select_(drug_identifier, ~drug) %>% 
+    select(drug_identifier, drug) %>% 
     distinct() %>% 
-    count_(drug_identifier) %>% 
+    count(drug_identifier) %>% 
     filter(n > 1) %>% 
     nrow()
   stopifnot(possible_duplicates == 0)
@@ -190,28 +190,28 @@ getIC50Matrix <- function(model_stats, drug_identifier = "drug",
   
   if(re_name){
     IC50_matrix <- model_stats %>%  
-      select_(~CL, drug_identifier, measure) %>% 
+      select(CL, drug_identifier, measure) %>% 
       distinct() %>%
-      mutate_(drug = lazyeval::interp(~ paste("Drug", foo, measure, sep = "_"),
+      mutate(drug = lazyeval::interp( paste("Drug", foo, measure, sep = "_"),
                                       foo = as.name(drug_identifier)))
     
     if (identical(drug_identifier, "drug")){
-      IC50_matrix <- IC50_matrix %>% tidyr::spread_("drug", measure)
+      IC50_matrix <- IC50_matrix %>% tidyr::spread("drug", measure)
     } 
     else {
       IC50_matrix <- IC50_matrix %>% 
-        select_(.dots = list(paste("-", drug_identifier))) %>%
-        tidyr::spread_("drug", measure)
+        select(.dots = list(paste("-", drug_identifier))) %>%
+        tidyr::spread("drug", measure)
     }
   }
   else{
     IC50_matrix <- model_stats %>%  
-      select_(~CL, drug_identifier, measure) %>% 
+      select(CL, drug_identifier, measure) %>% 
       distinct() %>%
-      tidyr::spread_(drug_identifier, measure)
+      tidyr::spread(drug_identifier, measure)
   }
   
-  IC50_matrix <- IC50_matrix %>% rename_(.dots = stats::setNames('CL', cl_spec))
+  IC50_matrix <- IC50_matrix %>% rename(.dots = stats::setNames('CL', cl_spec))
   
   return(IC50_matrix)
 }
@@ -299,7 +299,7 @@ getX <- function(y, xmid, scal){
 
 plotResponse <- function(model_stats, cell_line, drug_identifier) {
   plot_data <- model_stats %>%
-    filter_(~CL == cell_line, ~drug == drug_identifier)
+    filter(CL == cell_line, drug == drug_identifier)
   stopifnot(nrow(plot_data) > 0)
   
   IC50 <- unique(plot_data$IC50)
@@ -322,13 +322,13 @@ plotResponse <- function(model_stats, cell_line, drug_identifier) {
   stopifnot(length(max_conc) == 1)
 
   plot_data <- plot_data %>%
-    mutate_(lx = ~log(getConcFromX(x, maxc)),
-            lxmid = ~log(getConcFromX(xmid, maxc))
+    mutate(lx = log(getConcFromX(x, maxc)),
+            lxmid = log(getConcFromX(xmid, maxc))
             )
   
-  plot_xmid <- plot_data %>% select_(~xmid) %>% distinct()
-  plot_scal <- plot_data %>% select_(~scal) %>% distinct()
-  plot_maxc <- plot_data %>% select_(~maxc) %>% distinct()
+  plot_xmid <- plot_data %>% select(xmid) %>% distinct()
+  plot_scal <- plot_data %>% select(scal) %>% distinct()
+  plot_maxc <- plot_data %>% select(maxc) %>% distinct()
   
   plot_low_x <- 1 - plot_scal$scal * log((1 - 1e-3) / 1e-3) + plot_xmid$xmid
   plot_low_x <- log(getConcFromX(plot_low_x, +plot_maxc$maxc))
@@ -338,10 +338,10 @@ plotResponse <- function(model_stats, cell_line, drug_identifier) {
   plot_high_x <- log(getConcFromX(plot_high_x, plot_maxc$maxc))
   plot_high_x <- max(c(plot_data$lx, plot_high_x))
   
-  p <- ggplot(plot_data) + aes_(x = ~lx, y = ~ 1 - yhat) + geom_point(shape = 3) +
+  p <- ggplot(plot_data) + aes(x = lx, y =  1 - yhat) + geom_point(shape = 3) +
   scale_x_continuous(limits = c(plot_low_x, plot_high_x))
 
-  p <- p + stat_function(aes_(x = ~lx),
+  p <- p + stat_function(aes(x = lx),
                          fun = l3_model2,
                          args = list(maxc = plot_maxc$maxc,
                                      xmid = plot_xmid$xmid,
@@ -354,12 +354,12 @@ plotResponse <- function(model_stats, cell_line, drug_identifier) {
                      alpha = 0.2
   )
   
-  p <- p + aes_(x = ~lx, y = ~ 1 - yhat) + geom_point(shape = 4)
+  p <- p + aes(x = lx, y =  1 - yhat) + geom_point(shape = 4)
 
-  p <- p + geom_point(aes_(x = ~lx, y = ~1 - y), shape = 1)
-  p <- p + geom_point(aes_(x = ~lxmid, y = 0.5), colour = "red") + theme(legend.position = "none")
-  p <- p + geom_point(aes_(x = ~lxmid, y = 0.5), colour = "green", shape = 5, size = 3) + theme(legend.position = "none")
-  p <- p + geom_linerange(aes_(x = ~IC50, ymax = 0.5, ymin = 0, colour = "red"), linetype = "dashed")
+  p <- p + geom_point(aes(x = lx, y = 1 - y), shape = 1)
+  p <- p + geom_point(aes(x = lxmid, y = 0.5), colour = "red") + theme(legend.position = "none")
+  p <- p + geom_point(aes(x = lxmid, y = 0.5), colour = "green", shape = 5, size = 3) + theme(legend.position = "none")
+  p <- p + geom_linerange(aes(x = IC50, ymax = 0.5, ymin = 0, colour = "red"), linetype = "dashed")
   p <- p + annotate("label",
                     x = IC50 + 1,
                     y = 0.5,
