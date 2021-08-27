@@ -174,44 +174,34 @@ calcNlmeStats <- function (nlme_model, nlme_data) {
 #' @export
 getIC50Matrix <- function(model_stats, drug_identifier = "drug",
                           re_name = T, measure = "IC50") {
-  
+  # drug_identifier <- sym(drug_identifier)
   # Make sure there is a 1-to-1 correspondence between chosen drug identifier and the drug column
   possible_duplicates <- model_stats %>% 
-    select(drug_identifier, drug) %>% 
+    select(!!sym(drug_identifier), drug) %>% 
     distinct() %>% 
-    count(drug_identifier) %>% 
+    count(!!sym(drug_identifier)) %>% 
     filter(n > 1) %>% 
     nrow()
   stopifnot(possible_duplicates == 0)
   
-  
-  
   cl_spec <- unique(model_stats$CL_SPEC)
-  
+
   if(re_name){
-    IC50_matrix <- model_stats %>%  
-      select(CL, drug_identifier, measure) %>% 
+    IC50_matrix <- model_stats %>%
+      select(CL, drug_identifier, measure) %>%
       distinct() %>%
-      mutate(drug = lazyeval::interp( paste("Drug", foo, measure, sep = "_"),
-                                      foo = as.name(drug_identifier)))
-    
-    if (identical(drug_identifier, "drug")){
-      IC50_matrix <- IC50_matrix %>% tidyr::spread("drug", measure)
-    } 
-    else {
-      IC50_matrix <- IC50_matrix %>% 
-        select(.dots = list(paste("-", drug_identifier))) %>%
-        tidyr::spread("drug", measure)
-    }
-  }
+      mutate(!!drug_identifier := paste("Drug", !!sym(drug_identifier), measure, sep = "_"))
+      }
   else{
-    IC50_matrix <- model_stats %>%  
-      select(CL, drug_identifier, measure) %>% 
-      distinct() %>%
-      tidyr::spread(drug_identifier, measure)
+    IC50_matrix <- model_stats %>%
+      select(CL, drug_identifier, measure) %>%
+      distinct()
+      # tidyr::spread(drug_identifier, measure)
   }
-  
-  IC50_matrix <- IC50_matrix %>% rename(.dots = stats::setNames('CL', cl_spec))
+
+  IC50_matrix <- IC50_matrix %>% 
+    tidyr::spread(drug_identifier, measure) %>% 
+    rename(!!cl_spec := CL)
   
   return(IC50_matrix)
 }
