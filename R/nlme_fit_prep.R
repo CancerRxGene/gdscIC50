@@ -618,9 +618,9 @@ condenseWellPosition <- function(position_data){
   return(condensed_position)
 }
 
-setMaxConc <- function(normalized_data, drug_specifiers){
+setMaxConc <- function(normalized_data, group_specifiers){
   normalized_data %>% 
-    group_by_at(drug_specifiers) %>%
+    group_by_at(group_specifiers) %>%
     mutate(maxc =  max(CONC)) %>%
     ungroup()
 }
@@ -646,6 +646,7 @@ setXFromConc <- function(normalized_data){
 #' @param group_conc_ranges logical. If TRUE then instances where the same drug
 #'  has been used in different concentration ranges will be grouped together
 #'   with a single maxc. Default is FALSE.
+#' @param cell_line_spec Column name to use for cell liene grouping. Default is MASTER_CELL_ID",
 #' @param conc_col a string to identify the column used for the concentration 
 #'   values - useful for combination drug treatments.
 #' 
@@ -663,6 +664,7 @@ setXFromConc <- function(normalized_data){
 #' @export
 setConcsForNlme <- function(normalized_data, 
                             group_conc_ranges = F,
+                            cell_line_spec ="MASTER_CELL_ID",
                             conc_col = "CONC"
                            ) {
   if (group_conc_ranges){
@@ -681,7 +683,7 @@ setConcsForNlme <- function(normalized_data,
   }
     
   normalized_data <- normalized_data %>% 
-    setMaxConc(drug_specifiers = drug_specifiers) %>% 
+    setMaxConc(group_specifiers = c(cell_line_spec, drug_specifiers)) %>% 
     setXFromConc()
   
   return(normalized_data)
