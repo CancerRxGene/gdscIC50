@@ -4,7 +4,12 @@
 \alias{setConcsForNlme}
 \title{Adds columns \code{maxc} and \code{x} to GDSC normalized-data data frame.}
 \usage{
-setConcsForNlme(normalized_data, group_conc_ranges = F, conc_col = "CONC")
+setConcsForNlme(
+  normalized_data,
+  group_conc_ranges = F,
+  cell_line_spec = "MASTER_CELL_ID",
+  conc_col = "CONC"
+)
 }
 \arguments{
 \item{normalized_data}{a GDSC normalized-data data frame.}
@@ -12,6 +17,8 @@ setConcsForNlme(normalized_data, group_conc_ranges = F, conc_col = "CONC")
 \item{group_conc_ranges}{logical. If TRUE then instances where the same drug
 has been used in different concentration ranges will be grouped together
  with a single maxc. Default is FALSE.}
+
+\item{cell_line_spec}{Column name to use for cell liene grouping. Default is MASTER_CELL_ID",}
 
 \item{conc_col}{a string to identify the column used for the concentration 
 values - useful for combination drug treatments.}

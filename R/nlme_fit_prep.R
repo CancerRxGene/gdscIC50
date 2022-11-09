@@ -646,7 +646,7 @@ setXFromConc <- function(normalized_data){
 #' @param group_conc_ranges logical. If TRUE then instances where the same drug
 #'  has been used in different concentration ranges will be grouped together
 #'   with a single maxc. Default is FALSE.
-#' @param cell_line_spec Column name to use for cell liene grouping. Default is MASTER_CELL_ID",
+#' @param cell_line_spec Column name to use for cell line grouping. Default is MASTER_CELL_ID",
 #' @param conc_col a string to identify the column used for the concentration 
 #'   values - useful for combination drug treatments.
 #' 
@@ -669,13 +669,14 @@ setConcsForNlme <- function(normalized_data,
                            ) {
   if (group_conc_ranges){
     drug_specifiers <- "DRUG_ID_lib"
-    message("Grouping all dilution series per DRUG_ID_lib to get maximum
+    message("Per cell line, grouping all dilution series per DRUG_ID_lib to get maximum
             concentrations and to set x values.")
   }
   else {
     drug_specifiers = c("DRUGSET_ID", "lib_drug")
     message("Different dilution series per DRUG_ID_lib are being treated
-            separately to get maximum concentration and to set x values.")
+            separately to get maximum concentration and to set x values. 
+            Per cell line each drug to fit is specified by DRUGSET_ID and lib_drug.")
   }
   
   if(conc_col != "CONC" && !("CONC" %in% names(normalized_data)) ){
@@ -776,13 +777,12 @@ prepNlmeData <- function(normalized_data, cl_id = "",
   maxc_check <- nlme_data %>% distinct(drug, maxc) %>% count(drug) %>% filter(n > 1)
   
   if (nrow(maxc_check) > 0){
-      warning(paste("There is more than one maximum concentration for drug ",
+      stop(paste("There is more than one maximum concentration for drug ",
                     maxc_check$drug,
-                    "",
+                    ".\nTry adding maxc to the drug_specifier.",
                     sep = "")
               )
     }
-  
   
   # Add extra annotation
   if (!is.null(normalized_data$RESEARCH_PROJECT)){
