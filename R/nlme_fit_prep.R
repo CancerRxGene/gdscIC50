@@ -669,8 +669,7 @@ setConcsForNlme <- function(normalized_data,
                            ) {
   if (group_conc_ranges){
     drug_specifiers <- "DRUG_ID_lib"
-    message("Per cell line, grouping all dilution series per DRUG_ID_lib to get maximum
-            concentrations and to set x values.")
+    message("Per cell line, grouping all dilution series per DRUG_ID_lib to get maximum concentrations and to set x values.")
   }
   else {
     drug_specifiers = c("DRUGSET_ID", "lib_drug")
@@ -685,6 +684,38 @@ setConcsForNlme <- function(normalized_data,
     
   normalized_data <- normalized_data %>% 
     setMaxConc(group_specifiers = c(cell_line_spec, drug_specifiers)) %>% 
+    setXFromConc()
+  
+  return(normalized_data)
+}
+
+
+setDrugsForNlme <- function(normalized_data, 
+                            drug_spec = "DRUG_ID_lib",
+                            cell_line_spec ="MASTER_CELL_ID",
+                            conc_col = "CONC") {
+  
+  # Check normalized_data has the required columns
+  e2 <- simpleError("Your normalized data does not contain the columns specified to make the drug column.")
+  if (!all({{drug_spec}} %in% names(normalized_data))){
+    stop(e2)
+  }
+  
+  message(paste("The maximum concentration for a dose response will be calculated for each grouping of ",
+                cell_line_spec, " and ", 
+                paste(drug_spec, collapse = " and "), 
+                ".",
+                sep = "")
+          )
+  
+  if(conc_col != "CONC" && !("CONC" %in% names(normalized_data)) ){
+    normalized_data["CONC"] <- normalized_data[conc_col]
+  }
+  
+  normalized_data <- normalized_data %>% 
+    tidyr::unite(col = drug, {{drug_spec}}, sep = "_", remove = F) %>% 
+    mutate(drug_spec = paste({{drug_spec}}, collapse = "+")) %>% 
+    setMaxConc(group_specifiers = c(cell_line_spec, drug_spec)) %>% 
     setXFromConc()
   
   return(normalized_data)
@@ -733,21 +764,20 @@ setConcsForNlme <- function(normalized_data,
 #'   \code{\link{fitModelNlmeData}}
 #'  
 #' @export
-prepNlmeData <- function(normalized_data, cl_id = "",
-                         drug_specifiers = c("DRUG_ID_lib", "maxc"),
+prepNlmeData <- function(normalized_data, 
+                         cl_id = "",
+                         # drug_specifies = c("DRUG_ID_lib", "maxc"),
                          include_combos = F){
   
-  # Check that setConcsForNlme has been run first. 
-  e1 <- simpleError("No maxc or x columns in the normalized_data. Run setConcsForNlme() before prepNlmeData")
+  # Check that setDrugsForNlme has been run first. 
+  e1 <- simpleError("No maxc or x columns in the normalized_data. Run setDrugsForNlme() before prepNlmeData")
   if (is.null(normalized_data$maxc) || is.null(normalized_data$x)){
     stop(e1)
   }
   
-  # Check normalized_data has the required columns
-  e2 <- simpleError("Your normalized data does not contain the columns specified to make the drug column.")
-  if (!all({{drug_specifiers}} %in% names(normalized_data))){
-    stop(e2)
-  }
+  drug_specifiers <- normalized_data %>% distinct(drug_spec)
+  stopifnot(nrow(drug_specifiers) == 1)
+  drug_specifiers <- stringr::str_split_1(drug_specifiers$drug_spec, "\\+")
   
   if(include_combos){
     normalized_data <- normalized_data %>% 
@@ -764,25 +794,12 @@ prepNlmeData <- function(normalized_data, cl_id = "",
   }
   nlme_data <- normalized_data %>% 
       select(CELL_LINE_NAME, CL = one_of({{cl_id}}), maxc, x, y = normalized_intensity, 
-          one_of({{drug_specifiers}}), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos) %>% 
+          one_of({{drug_specifiers}}), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, drug_spec) %>% 
     mutate(CL_SPEC = {{cl_id}}) %>% 
-    tidyr::unite(col = drug, {{drug_specifiers}}, sep = "_", remove = F) %>% 
-    mutate(drug_spec = paste({{drug_specifiers}}, collapse = "+"),
-           y =  1 - y,
+    mutate(y =  1 - y,
            time_stamp = normalized_data$time_stamp[1],
            sw_version = normalized_data$sw_version[1]) %>% 
     arrange(CL, drug, x)
-  
-  # Check that there is a 1-to-1 correspondence between the drug and maxc for that drug
-  maxc_check <- nlme_data %>% distinct(drug, maxc) %>% count(drug) %>% filter(n > 1)
-  
-  if (nrow(maxc_check) > 0){
-      stop(paste("There is more than one maximum concentration for drug ",
-                    maxc_check$drug,
-                    ".\nTry adding maxc to the drug_specifier.",
-                    sep = "")
-              )
-    }
   
   # Add extra annotation
   if (!is.null(normalized_data$RESEARCH_PROJECT)){
