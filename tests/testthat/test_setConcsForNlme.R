@@ -92,7 +92,7 @@ test_that("group_conc_ranges=T returns different maxc if dividing cell lines by 
 test_that("group_conc_ranges=T returns an informative message",{
   testthat::expect_message(
     setConcsForNlme(norm_data, group_conc_ranges = T),
-    "^Grouping all dilution series per DRUG_ID_lib to get maximum\\s+concentrations and to set x values", perl = T)
+    "^Per cell line, grouping all dilution series per DRUG_ID_lib to get maximum concentrations and to set x values", perl = T)
 })
 
 test_that("group_conc_ranges=F returns an informative message",{
