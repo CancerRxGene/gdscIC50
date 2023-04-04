@@ -689,13 +689,52 @@ setConcsForNlme <- function(normalized_data,
   return(normalized_data)
 }
 
-
+#' Adds columns \code{maxc} and \code{x} to GDSC normalized-data data frame.
+#' 
+#' This is run prior to running prepNlmeData.
+#' 
+#' \code{maxc} is the maximum micromolar concentration of the treatment drug.
+#' \code{x} is the conversion of the micromolar screening concentration to 
+#' a range where the maximum dose = 9
+#' 
+#' @param normalized_data a GDSC normalized-data data frame.
+#' @param drug_spec a character vector containing the names of the columns 
+#'   to be taken from the \code{normalized_data} and combined to make the new 
+#'   \code{drug} column. The drug column will be used in the nlme model. Default is "DRUG_ID_lib".
+#' @param cell_line_spec Column name to use for cell line grouping. Default is "MASTER_CELL_ID",
+#' @param conc_col a string to identify the column used for the concentration 
+#'   values - useful for combination drug treatments.
+#' 
+#' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
+#'   \code{\link{normalizeData}},  \code{\link{prepNlmeData}}
+#' 
+#' @examples
+#' data("gdsc_example")
+#' gdsc_example <- removeFailedDrugs(gdsc_example)
+#' gdsc_example <- removeMissingDrugs(gdsc_example)
+#' gdsc_example <- normalizeData(gdsc_example)
+#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' 
+#' @export
 setDrugsForNlme <- function(normalized_data, 
                             drug_spec = "DRUG_ID_lib",
                             cell_line_spec ="MASTER_CELL_ID",
                             conc_col = "CONC") {
   
-  # Check normalized_data has the required columns
+  # Check length of cell_line_spec is 1
+  e1 <- simpleError("Your cell_line_spec is greater one. Recommended choices are: MASTER_CELL_ID, CELL_ID, COSMIC_ID")
+  if (length({{cell_line_spec}}) > 1){
+    stop(e1)
+  }
+  
+  # Check normalized_data has the required column for cell line specifier
+  e1a <- simpleError("Your normalized data does not contain the columns specified to make the CL column.")
+  if (!({{cell_line_spec}} %in% names(normalized_data))){
+    stop(e1a)
+  }
+  
+  # Check normalized_data has the required columns for drug specifier
   e2 <- simpleError("Your normalized data does not contain the columns specified to make the drug column.")
   if (!all({{drug_spec}} %in% names(normalized_data))){
     stop(e2)
@@ -715,6 +754,8 @@ setDrugsForNlme <- function(normalized_data,
   normalized_data <- normalized_data %>% 
     tidyr::unite(col = drug, {{drug_spec}}, sep = "_", remove = F) %>% 
     mutate(drug_spec = paste({{drug_spec}}, collapse = "+")) %>% 
+    mutate(CL = {{cell_line_spec}}) %>% 
+    mutate(CL_SPEC = paste({{cell_line_spec}}, collapse = "+")) %>% 
     setMaxConc(group_specifiers = c(cell_line_spec, drug_spec)) %>% 
     setXFromConc()
   
@@ -765,8 +806,8 @@ setDrugsForNlme <- function(normalized_data,
 #'  
 #' @export
 prepNlmeData <- function(normalized_data, 
-                         cl_id = "",
-                         # drug_specifies = c("DRUG_ID_lib", "maxc"),
+                         # cl_spec = "",
+                         # drug_spec = c("DRUG_ID_lib", "maxc"),
                          include_combos = F){
   
   # Check that setDrugsForNlme has been run first. 
@@ -776,6 +817,10 @@ prepNlmeData <- function(normalized_data,
   }
   
   drug_specifiers <- normalized_data %>% distinct(drug_spec)
+  stopifnot(nrow(drug_specifiers) == 1)
+  drug_specifiers <- stringr::str_split_1(drug_specifiers$drug_spec, "\\+")
+  
+  cl_specifier <- normalized_data %>% distinct(cl_spec)
   stopifnot(nrow(drug_specifiers) == 1)
   drug_specifiers <- stringr::str_split_1(drug_specifiers$drug_spec, "\\+")
   
@@ -793,9 +838,8 @@ prepNlmeData <- function(normalized_data,
 
   }
   nlme_data <- normalized_data %>% 
-      select(CELL_LINE_NAME, CL = one_of({{cl_id}}), maxc, x, y = normalized_intensity, 
-          one_of({{drug_specifiers}}), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, drug_spec) %>% 
-    mutate(CL_SPEC = {{cl_id}}) %>% 
+      select(CELL_LINE_NAME, CL, maxc, x, y = normalized_intensity, 
+          all_of({{drug_specifiers}}), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, drug_spec, CL_SPEC) %>% 
     mutate(y =  1 - y,
            time_stamp = normalized_data$time_stamp[1],
            sw_version = normalized_data$sw_version[1]) %>% 
