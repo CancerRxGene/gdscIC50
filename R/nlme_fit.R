@@ -97,8 +97,9 @@ fitModel <- function(gDat, vStart = c(8.886464, 1.495953 ), bLargeScale=TRUE, bS
   }
   # coding of relative kill (1-viability) correct; mean of gDat$y at gDat$x==9 should be higher than at min(gDat$x)
   tmp.minx <- min(gDat$x)
+  tmp.maxx <- max(gDat$x)
   tmp.whichxmin <- which(gDat$x == tmp.minx)
-  tmp.whichxmax <- which(gDat$x == 9)
+  tmp.whichxmax <- which(gDat$x == tmp.maxx)
   tmp.ymin <- mean(stats::na.omit(gDat$y[tmp.whichxmin]))
   tmp.ymax <- mean(stats::na.omit(gDat$y[tmp.whichxmax]))
   if(tmp.ymin > tmp.ymax){
