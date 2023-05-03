@@ -33,15 +33,15 @@ NULL
 #' @param myDat a GDSC raw data data frame.
 #' 
 #' @seealso \code{\link{removeMissingDrugs}}, \code{\link{normalizeData}},
-#'  \code{\link{setConcsForNlme}}, \code{\link{prepNlmeData}}
+#'  \code{\link{setDrugsForNlme}}, \code{\link{prepNlmeData}}
 #'
 #' @examples
 #' data("gdsc_example")
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setConcsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' nlme_data <- prepNlmeData(gdsc_example)
 #'  
 #' @export
 removeFailedDrugs <- function(myDat){
@@ -65,15 +65,15 @@ removeFailedDrugs <- function(myDat){
 #' @param myDat a GDSC raw data data frame.
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{normalizeData}},
-#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+#'   \code{\link{setDrugsForNlme}},  \code{\link{prepNlmeData}}
 #'  
 #' @examples
 #' data("gdsc_example")
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setConcsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' nlme_data <- prepNlmeData(gdsc_example)
 #' 
 #' @export
 removeMissingDrugs <- function(myDat){
@@ -148,14 +148,14 @@ findMultiLibs <- function(myDat){
 #' @param myDat a GDSC raw data data frame.
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{normalizeData}},
-#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+#'   \code{\link{setDrugsForNlme}},  \code{\link{prepNlmeData}}
 #'  
 #' @examples
 #' \dontrun{
 #' screen_data <- screen_data %>% removeMissingDrugs() %>% removeFailedDrugs()
 #' screen_data <- removeMultiLibs(screen_data)
 #' norm_data <- normalizeData(screen_data)
-#' nlme_data <- prepNlmeData(norm_data, "COSMIC_ID")
+#' nlme_data <- prepNlmeData(norm_data)
 #' }
 #' @export
 removeMultiLibs <- function(myDat){
@@ -191,15 +191,15 @@ removeMultiLibs <- function(myDat){
 #'   lower end of the dynamic range.
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
-#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}
+#'   \code{\link{setDrugsForNlme}},  \code{\link{prepNlmeData}}
 #' 
 #' @examples
 #' data("gdsc_example")
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setConcsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' nlme_data <- prepNlmeData(gdsc_example)
 #'
 #' @export
 normalizeData <- function(myDat, trim = T, neg_control = 'NC-1',
@@ -321,7 +321,7 @@ calcTagMean <- function(myDat, tag_name, mean_col_name = "tag_mean") {
 #'   lower end of the dynamic range.
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
-#'   \code{\link{setConcsForNlme}},  \code{\link{prepNlmeData}}, 
+#'   \code{\link{setDrugsForNlme}},  \code{\link{prepNlmeData}}, 
 #'   \code{\link{normalizeData}}
 #' 
 #' @examples
@@ -329,8 +329,8 @@ calcTagMean <- function(myDat, tag_name, mean_col_name = "tag_mean") {
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeComboData(gdsc_example)
-#' gdsc_example <- setConcsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' nlme_data <- prepNlmeData(gdsc_example)
 #'
 #' @export
 normalizeComboData <- function(myDat, trim = T, neg_control = 'NC-1',
@@ -659,7 +659,7 @@ setXFromConc <- function(normalized_data){
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
 #' gdsc_example <- setConcsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' nlme_data <- prepNlmeData(gdsc_example)
 #' 
 #' @export
 setConcsForNlme <- function(normalized_data, 
@@ -689,9 +689,11 @@ setConcsForNlme <- function(normalized_data,
   return(normalized_data)
 }
 
-#' Adds columns \code{maxc} and \code{x} to GDSC normalized-data data frame.
+#' setDrugsForNlme
 #' 
-#' This is run prior to running prepNlmeData.
+#' This set sets the experimental grouping for each dose response fitted based 
+#' on a combination of cell line (\code{CL}) and treatment (\code{drug}). It is 
+#' run prior to running prepNlmeData.
 #' 
 #' \code{maxc} is the maximum micromolar concentration of the treatment drug.
 #' \code{x} is the conversion of the micromolar screening concentration to 
@@ -701,9 +703,19 @@ setConcsForNlme <- function(normalized_data,
 #' @param drug_spec a character vector containing the names of the columns 
 #'   to be taken from the \code{normalized_data} and combined to make the new 
 #'   \code{drug} column. The drug column will be used in the nlme model. Default is "DRUG_ID_lib".
-#' @param cell_line_spec Column name to use for cell line grouping. Default is "MASTER_CELL_ID",
+#' @param cell_line_spec Column name to use for cell line grouping. Default is "MASTER_CELL_ID".
 #' @param conc_col a string to identify the column used for the concentration 
-#'   values - useful for combination drug treatments.
+#'   values - useful for combination drug treatment. Default is "CONC".
+#'
+#' @return - the normalized data with additional columns of \code{drug, drug_spec, CL, CL_spec, maxc, x}
+#' 
+#'  \item{\code{drug}}{is a concatenation of the drug_specifier columns (default DRUG_ID and maxc).}
+#'  \item{\code{drug_spec}}{is/are the column name(s) used to make the drug column separated by '+'. The original columns will be also included as separate columns.}
+#'  \item{\code{CL}}{is the cell line identifier in the nlme model.}
+#'  \item{\code{CL_spec}}{is the column name used for the CL.}
+#'  \item{\code{maxc}}{is the maximum concentration screened for the experiment(s) using a specific combination of CL and drug}
+#'  \item{\code{x}}{is the conversion of the micromolar screening concentration to a scale where the maximum dose = 9}
+#' 
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
 #'   \code{\link{normalizeData}},  \code{\link{prepNlmeData}}
@@ -714,30 +726,35 @@ setConcsForNlme <- function(normalized_data,
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
 #' gdsc_example <- setDrugsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, "COSMIC_ID")
+#' nlme_data <- prepNlmeData(gdsc_example)
 #' 
 #' @export
 setDrugsForNlme <- function(normalized_data, 
                             drug_spec = "DRUG_ID_lib",
-                            cell_line_spec ="MASTER_CELL_ID",
+                            cell_line_spec = "MASTER_CELL_ID",
                             conc_col = "CONC") {
   
-  # Check length of cell_line_spec is 1
-  e1 <- simpleError("Your cell_line_spec is greater one. Recommended choices are: MASTER_CELL_ID, CELL_ID, COSMIC_ID")
-  if (length({{cell_line_spec}}) > 1){
+  e1 <- simpleError("Choose a suitable cl_id: COSMIC_ID, MASTER_CELL_ID or CELL_ID")
+  if(!(cl_id) %in% c("COSMIC_ID", "CELL_ID", "MASTER_CELL_ID")){
     stop(e1)
   }
   
+  # Check length of cell_line_spec is 1
+  e2 <- simpleError("Your cell_line_spec is greater one. Recommended choices are: MASTER_CELL_ID, CELL_ID, COSMIC_ID")
+  if (length({{cell_line_spec}}) > 1){
+    stop(e2)
+  }
+  
   # Check normalized_data has the required column for cell line specifier
-  e1a <- simpleError("Your normalized data does not contain the columns specified to make the CL column.")
+  e3 <- simpleError("Your normalized data does not contain the columns specified to make the CL column.")
   if (!({{cell_line_spec}} %in% names(normalized_data))){
-    stop(e1a)
+    stop(e3)
   }
   
   # Check normalized_data has the required columns for drug specifier
-  e2 <- simpleError("Your normalized data does not contain the columns specified to make the drug column.")
+  e4 <- simpleError("Your normalized data does not contain the columns specified to make the drug column.")
   if (!all({{drug_spec}} %in% names(normalized_data))){
-    stop(e2)
+    stop(e4)
   }
   
   message(paste("The maximum concentration for a dose response will be calculated for each grouping of ",
@@ -754,8 +771,8 @@ setDrugsForNlme <- function(normalized_data,
   normalized_data <- normalized_data %>% 
     tidyr::unite(col = drug, {{drug_spec}}, sep = "_", remove = F) %>% 
     mutate(drug_spec = paste({{drug_spec}}, collapse = "+")) %>% 
-    mutate(CL = {{cell_line_spec}}) %>% 
-    mutate(CL_SPEC = paste({{cell_line_spec}}, collapse = "+")) %>% 
+    mutate(CL = !!sym(cell_line_spec)) %>% 
+    mutate(CL_spec = paste({{cell_line_spec}}, collapse = "+")) %>% 
     setMaxConc(group_specifiers = c(cell_line_spec, drug_spec)) %>% 
     setXFromConc()
   
@@ -765,48 +782,36 @@ setDrugsForNlme <- function(normalized_data,
 #' Converts GDSC normalized-data data frame to input format for nlme curve fit.
 #' 
 #' @param normalized_data a GDSC normalized-data data frame.
-#' @param cl_id spcifies which cell line identifier to be used for nlme input - 
-#'   currently "COSMIC_ID" or "CELL_ID"
-#' @param drug_specifiers a character vector containing the names of the columns 
-#'   to be taken from the \code{normalized_data} and combined to make the new 
-#'   \code{drug} column. The drug column will be used in the nlme model.
 #' @param include_combos logical indicating whether or not to include -C tags in
 #'   the output - you will need to be careful with the drug_specifiers if T, e.g., 
 #'   \code{drug_specifiers = c("SCAN_ID", "lib_drug", "anchor")}
 #' 
-#' @return data frame with columns \code{DRUG_ID, CELL_LINE_NAME, CL, maxc, x,
+#' @returns data frame with columns \code{DRUG_ID, CELL_LINE_NAME, CL, maxc, x,
 #'  y, drug, SCAN_ID, norm_neg_pos, drug_spec}
-#' \code{CL} is the cell line identifier.
-#' \code{x} is the conversion of the micromolar screening concentration to 
-#' a range where the maximum dose = 9
-#' \code{y} is the normalized intensity from the experiment (sometimes called
-#'  viability)
-#' \code{drug} a concatenation of the drug_specifier columns 
-#'   (default DRUG_ID and maxc).
-#' \code{SCAN_ID} The id of the plate scan used to provide the raw data.
-#' \code{norm_neg_pos} The identifiers of the control tags used to normalise the
-#'  data separated by '+'.
-#' \code{drug_spec} the column names used to make the drug column separated by
-#'  '+'. The original columns will be also included as separate columns.
+#'  \item{\code{CL}}{is the cell line identifier in the nlme model.}
+#'  \item{\code{x}}{is the conversion of the micromolar screening concentration to a scale where the maximum dose = 9}
+#'  \item{\code{y}}{is the normalized intensity from the experiment (sometimes called viability).}
+#'  \item{\code{drug}}{is a concatenation of the drug_specifier columns (default DRUG_ID and maxc).}
+#'  \item{\code{SCAN_ID}}{is the id of the plate scan used to provide the raw data.}
+#'  \item{\code{norm_neg_pos}}{are the identifiers of the control tags used to normalise the data, separated by '+'.}
+#'  \item{\code{drug_spec}}{is/are the column name(s) used to make the drug column separated by '+'. The original columns will be also included as separate columns.}
 #' 
 #' @examples
 #' data("gdsc_example")
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setConcsForNlme(gdsc_example)
-#' nlme_data <- prepNlmeData(gdsc_example, 
-#'                           cl_id = "COSMIC_ID",
-#'                            drug_specifiers = c("DRUGSET_ID", "lib_drug"))
+#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' nlme_data <- prepNlmeData(gdsc_example)
 #' 
 #' 
 #' @seealso  \code{\link{removeFailedDrugs}},  \code{\link{removeMissingDrugs}},
-#'   \code{\link{normalizeData}},  \code{\link{setConcsForNlme}}, 
+#'   \code{\link{normalizeData}},  \code{\link{setDrugsForNlme}}, 
 #'   \code{\link{fitModelNlmeData}}
 #'  
 #' @export
 prepNlmeData <- function(normalized_data, 
-                         # cl_spec = "",
+                         # CL_spec = "",
                          # drug_spec = c("DRUG_ID_lib", "maxc"),
                          include_combos = F){
   
