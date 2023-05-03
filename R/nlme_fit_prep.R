@@ -820,10 +820,6 @@ prepNlmeData <- function(normalized_data,
   stopifnot(nrow(drug_specifiers) == 1)
   drug_specifiers <- stringr::str_split_1(drug_specifiers$drug_spec, "\\+")
   
-  cl_specifier <- normalized_data %>% distinct(cl_spec)
-  stopifnot(nrow(drug_specifiers) == 1)
-  drug_specifiers <- stringr::str_split_1(drug_specifiers$drug_spec, "\\+")
-  
   if(include_combos){
     normalized_data <- normalized_data %>% 
       filter(!is.na(lib_drug))
@@ -833,13 +829,15 @@ prepNlmeData <- function(normalized_data,
       filter(treatment == 'S', !is.na(lib_drug))
   }
   
-  if(!(cl_id) %in% c("COSMIC_ID", "CELL_ID", "MASTER_CELL_ID")){
-      stop('choose a suitable cl_id: COSMIC_ID, MASTER_CELL_ID or CELL_ID')
-
-  }
+  # if(!(cl_id) %in% c("COSMIC_ID", "CELL_ID", "MASTER_CELL_ID")){
+  #     stop('choose a suitable cl_id: COSMIC_ID, MASTER_CELL_ID or CELL_ID')
+  # 
+  # }
   nlme_data <- normalized_data %>% 
       select(CELL_LINE_NAME, CL, maxc, x, y = normalized_intensity, 
-          all_of({{drug_specifiers}}), BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, drug_spec, CL_SPEC) %>% 
+             drug, drug_spec,
+          all_of({{drug_specifiers}}),
+          BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, drug_spec, CL_spec) %>% 
     mutate(y =  1 - y,
            time_stamp = normalized_data$time_stamp[1],
            sw_version = normalized_data$sw_version[1]) %>% 

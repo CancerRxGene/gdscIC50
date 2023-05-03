@@ -4,22 +4,10 @@
 \alias{prepNlmeData}
 \title{Converts GDSC normalized-data data frame to input format for nlme curve fit.}
 \usage{
-prepNlmeData(
-  normalized_data,
-  cl_id = "",
-  drug_specifiers = c("DRUG_ID_lib", "maxc"),
-  include_combos = F
-)
+prepNlmeData(normalized_data, include_combos = F)
 }
 \arguments{
 \item{normalized_data}{a GDSC normalized-data data frame.}
-
-\item{cl_id}{spcifies which cell line identifier to be used for nlme input - 
-currently "COSMIC_ID" or "CELL_ID"}
-
-\item{drug_specifiers}{a character vector containing the names of the columns 
-to be taken from the \code{normalized_data} and combined to make the new 
-\code{drug} column. The drug column will be used in the nlme model.}
 
 \item{include_combos}{logical indicating whether or not to include -C tags in
 the output - you will need to be careful with the drug_specifiers if T, e.g., 
@@ -28,18 +16,13 @@ the output - you will need to be careful with the drug_specifiers if T, e.g.,
 \value{
 data frame with columns \code{DRUG_ID, CELL_LINE_NAME, CL, maxc, x,
  y, drug, SCAN_ID, norm_neg_pos, drug_spec}
-\code{CL} is the cell line identifier.
-\code{x} is the conversion of the micromolar screening concentration to 
-a range where the maximum dose = 9
-\code{y} is the normalized intensity from the experiment (sometimes called
- viability)
-\code{drug} a concatenation of the drug_specifier columns 
-  (default DRUG_ID and maxc).
-\code{SCAN_ID} The id of the plate scan used to provide the raw data.
-\code{norm_neg_pos} The identifiers of the control tags used to normalise the
- data separated by '+'.
-\code{drug_spec} the column names used to make the drug column separated by
- '+'. The original columns will be also included as separate columns.
+ \item{\code{CL}}{is the cell line identifier in the nlme model.}
+ \item{\code{x}}{is the conversion of the micromolar screening concentration to a scale where the maximum dose = 9}
+ \item{\code{y}}{is the normalized intensity from the experiment (sometimes called viability).}
+ \item{\code{drug}}{is a concatenation of the drug_specifier columns (default DRUG_ID and maxc).}
+ \item{\code{SCAN_ID}}{is the id of the plate scan used to provide the raw data.}
+ \item{\code{norm_neg_pos}}{are the identifiers of the control tags used to normalise the data, separated by '+'.}
+ \item{\code{drug_spec}}{is/are the column name(s) used to make the drug column separated by '+'. The original columns will be also included as separate columns.}
 }
 \description{
 Converts GDSC normalized-data data frame to input format for nlme curve fit.
