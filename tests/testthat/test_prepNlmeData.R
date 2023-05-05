@@ -1,16 +1,22 @@
 context("Test prepNlmeData")
+# library(dplyr)
 
 test_data<- readRDS("norm_single_agents_test.rds")
 norm_data <- normalizeData(test_data)
 
-
 context("Test prepNlmeData")
 
-test_that("prepNlmeData gives an error if setConcsForNlme has not been run first", {
+test_that("prepNlmeData gives an error if setGroupsForNlme has not been run first", {
   testthat::expect_error(
-    prepNlmeData(norm_data),
-    "^No maxc or x columns in the normalized_data. Run setDrugsForNlme\\(\\) before prepNlmeData"
-    )
+    prepNlmeData(norm_data))
+})
+
+test_that("y is equal to 1 - viabilty", {
+  norm_data <- setGroupsForNlme(norm_data)
+  nlme_data <- prepNlmeData(norm_data)
+  test_data <- merge(norm_data[c("BARCODE", "POSITION", "normalized_intensity")],
+                          nlme_data[c("BARCODE", "POSITION", "y")])
+  testthat::expect_identical(1 - test_data$normalized_intensity, test_data$y)
 })
 
 # test_that("prepNlmeData gives an error if no cl_id is chosen", {

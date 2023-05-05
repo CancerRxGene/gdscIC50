@@ -1,6 +1,6 @@
-context("Test setDrugsForNlme")
+context("Test setGroupsForNlme")
 # --- Function prototype: ----
-# gdscIC50::setDrugsForNlme(norm_data, 
+# gdscIC50::setGroupsForNlme(norm_data, 
 #                           drug_spec = "DRUG_ID_lib", 
 #                           cell_line_spec = "MASTER_CELL_ID", 
 #                           conc_col = "CONC")
@@ -26,7 +26,7 @@ norm_data <- normalizeData(test_data)
 # Bill sees ds101 and 102; Ben sees ds202
 
 test_that('drug_spec = "DRUG_ID_lib" returns 2 maxc for drug id 9002',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = "DRUG_ID_lib", 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC")
@@ -66,7 +66,7 @@ test_that('drug_spec = "DRUG_ID_lib" returns 2 maxc for drug id 9002',{
 
 
 test_that('drug_spec = "DRUG_ID_lib" returns a different set of x values for L50 ds101 and L50 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = "DRUG_ID_lib", 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -81,7 +81,7 @@ test_that('drug_spec = "DRUG_ID_lib" returns a different set of x values for L50
 
 
 test_that('drug_spec = "DRUG_ID_lib" returns a different set of x values for L50 ds101 and L52 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = "DRUG_ID_lib", 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -96,7 +96,7 @@ test_that('drug_spec = "DRUG_ID_lib" returns a different set of x values for L50
 
 
 test_that('drug_spec = "DRUG_ID_lib" returns a different set of x values for L50 ds102 and L52 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = "DRUG_ID_lib", 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -112,7 +112,7 @@ test_that('drug_spec = "DRUG_ID_lib" returns a different set of x values for L50
 
 
 test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns 4 separate maxc for drug id 9002',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("DRUGSET_ID", "lib_drug"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC"
@@ -160,7 +160,7 @@ test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns 4 separate maxc for d
 
 
 test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns the same set of x values for L50 ds101 and L50 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("DRUGSET_ID", "lib_drug"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -177,7 +177,7 @@ test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns the same set of x val
 
 
 test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns the same set of x values for L50 ds101 and L52 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("DRUGSET_ID", "lib_drug"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -193,7 +193,7 @@ test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns the same set of x val
 
 
 test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns the same set of x values for L50 ds102 and L52 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("DRUGSET_ID", "lib_drug"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -211,7 +211,7 @@ test_that('drug_spec = c("DRUGSET_ID", "lib_drug") returns the same set of x val
 # Bill sees ds101 and 102; Ben sees ds202
 
 test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns 3 separate maxc for drug id 9002',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("BARCODE", "DRUG_ID_lib"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC"
@@ -260,7 +260,7 @@ test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns 3 separate maxc for d
 })
 
 test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns a different set of x values for L50 ds101 and L50 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("BARCODE", "DRUG_ID_lib"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -274,7 +274,7 @@ test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns a different set of x 
 })
 
 test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns the same set of x values for L50 ds101 and L52 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("BARCODE", "DRUG_ID_lib"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -289,7 +289,7 @@ test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns the same set of x val
 
 
 test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns a different set of x values for L50 ds102 and L52 ds102',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("BARCODE", "DRUG_ID_lib"), 
                                     cell_line_spec = "MASTER_CELL_ID",
                                     conc_col = "CONC") 
@@ -307,12 +307,12 @@ test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns a different set of x 
 
 
 # test_that("group_conc_ranges=T returns different maxc if dividing cell lines by expansion_id",{
-#   set_concs_data <- setDrugsForNlme(norm_data, group_conc_ranges = T, cell_line_spec = "MASTER_CELL_ID")
+#   set_concs_data <- setGroupsForNlme(norm_data, group_conc_ranges = T, cell_line_spec = "MASTER_CELL_ID")
 #   number_of_maxc_master_id <- nrow(unique(set_concs_data[set_concs_data$DRUG_ID_lib == 9002 &
 #                                                           set_concs_data$MASTER_CELL_ID == 111, "maxc"]))
 #   testthat::expect_true(number_of_maxc_master_id == 1)
 #   
-#   set_concs_data <- setDrugsForNlme(norm_data, group_conc_ranges = T, cell_line_spec = "CELL_ID")
+#   set_concs_data <- setGroupsForNlme(norm_data, group_conc_ranges = T, cell_line_spec = "CELL_ID")
 #   number_of_maxc_cell_id<- nrow(unique(set_concs_data[set_concs_data$DRUG_ID_lib == 9002 &
 #                                                         set_concs_data$MASTER_CELL_ID == 111, "maxc"]))
 #   testthat::expect_true(number_of_maxc_cell_id == 2)
@@ -323,7 +323,7 @@ test_that('drug_spec = c("BARCODE", "DRUG_ID_lib") returns a different set of x 
 # Bill (CELL_ID = 6) sees ds101 and Bill (CELL_ID  = 211) 102; Ben sees ds202
 
 test_that('drug_spec = "DRUG_ID_lib" and cell_line_spec = "CELL_ID" returns 2 maxc values for cell line Bill and 1 for Ben',{
-  set_concs_data <- setDrugsForNlme(norm_data,  
+  set_concs_data <- setGroupsForNlme(norm_data,  
                                     drug_spec = c("DRUG_ID_lib"), 
                                     cell_line_spec = "CELL_ID",
                                     conc_col = "CONC"
@@ -371,15 +371,15 @@ test_that('drug_spec = "DRUG_ID_lib" and cell_line_spec = "CELL_ID" returns 2 ma
   testthat::expect_identical(maxc_Ben_9002$maxc, maxc_ds202_L48$maxc)
 })
 
-test_that("If successful, setDrugsForNlme() returns an informative message",{
+test_that("If successful, setGroupsForNlme() returns an informative message",{
   testthat::expect_message(
-    setDrugsForNlme(norm_data),
+    setGroupsForNlme(norm_data),
     "^The maximum concentration for a dose response will be calculated for each grouping of MASTER_CELL_ID and DRUG_ID_lib.", perl = T)
 })
 
-test_that("With an ill formed drug_spec, setDrugsForNlme() returns an informative message",{
+test_that("With an ill formed drug_spec, setGroupsForNlme() returns an informative message",{
   testthat::expect_error(
-    setDrugsForNlme(norm_data, drug_spec =c("tweedle", "dee")),
+    setGroupsForNlme(norm_data, drug_spec =c("tweedle", "dee")),
     "^Your normalized data does not contain the columns specified to make the drug column.", perl = T)
 })
 
