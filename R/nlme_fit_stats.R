@@ -38,7 +38,7 @@ NULL
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' gdsc_example <- setGroupsForNlme(gdsc_example)
 #' nlme_data <- prepNlmeData(gdsc_example)
 #' \dontrun{
 #' nlme_model <- fitModelNlmeData(nlme_data, isLargeData = F)
@@ -113,7 +113,7 @@ calcNlmeFit <- function(model_coef){
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' gdsc_example <- setGroupsForNlme(gdsc_example)
 #' nlme_data <- prepNlmeData(gdsc_example)
 #' \dontrun{
 #' nlme_model <- fitModelNlmeData(nlme_data, isLargeData = F)
@@ -160,7 +160,7 @@ calcNlmeStats <- function (nlme_model, nlme_data) {
 #' gdsc_example <- removeFailedDrugs(gdsc_example)
 #' gdsc_example <- removeMissingDrugs(gdsc_example)
 #' gdsc_example <- normalizeData(gdsc_example)
-#' gdsc_example <- setDrugsForNlme(gdsc_example)
+#' gdsc_example <- setGroupsForNlme(gdsc_example)
 #' nlme_data <- prepNlmeData(gdsc_example)
 #' \dontrun{
 #' nlme_model <- fitModelNlmeData(nlme_data, isLargeData = F)
