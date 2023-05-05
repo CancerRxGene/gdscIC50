@@ -650,7 +650,7 @@ setConcsForNlme <- function(normalized_data,
 
 #' setGroupsForNlme
 #' 
-#' This set sets the experimental grouping for each dose response fitted based 
+#' This sets the experimental grouping for each dose response fitted based 
 #' on a combination of cell line (\code{CL}) and treatment (\code{drug}). It is 
 #' run prior to running prepNlmeData.
 #' 
@@ -783,8 +783,8 @@ prepNlmeData <- function(normalized_data,
   stopifnot(nrow(drug_specifiers) == 1)
   drug_specifiers <- stringr::str_split_1(drug_specifiers$drug_spec, "\\+")
   
-  cl_specifier <- normalized_data %>% distinct(CL_spec)
-  stopifnot(nrow(cl_specifier) == 1)
+  cl_specifier <- unique(normalized_data$CL_spec)
+  stopifnot(length(cl_specifier) == 1)
   
   if(include_combos){
     normalized_data <- normalized_data %>% 
@@ -795,18 +795,8 @@ prepNlmeData <- function(normalized_data,
       filter(treatment == 'S', !is.na(lib_drug))
   }
   
-  nlme_data <- normalized_data %>% 
-      select(CELL_LINE_NAME, CL, CL_spec, 
-             # {{cl_specifier$CL_spec}}, 
-             drug, drug_spec,
-             all_of({{drug_specifiers}}),
-             maxc, x, y = normalized_intensity, 
-             BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, 
-             time_stamp, sw_version) %>% 
-    mutate(y =  1 - y) %>% 
-           # time_stamp = normalized_data$time_stamp[1],
-           # sw_version = normalized_data$sw_version[1]) %>% 
-    arrange(CL, drug, x)
+  nlme_data <- normalized_data  %>% 
+    mutate(y =  1 - normalized_intensity) 
   
   # Add extra annotation
   if (!is.null(normalized_data$RESEARCH_PROJECT)){
@@ -815,6 +805,17 @@ prepNlmeData <- function(normalized_data,
                     by = "BARCODE")
   }
   
+  nlme_data <- nlme_data %>% 
+    select(CELL_LINE_NAME, CL, CL_spec, 
+           # {{cl_specifier$CL_spec}}, 
+           drug, drug_spec,
+           all_of({{drug_specifiers}}),
+           maxc, x, y, 
+           BARCODE, SCAN_ID, POSITION, DRUGSET_ID, norm_neg_pos, 
+           time_stamp, sw_version) %>% 
+    arrange(CL, drug, x)
+  
+    
   return(nlme_data)
 }
 
