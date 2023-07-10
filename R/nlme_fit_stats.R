@@ -184,7 +184,7 @@ getIC50Matrix <- function(model_stats, drug_identifier = "drug",
     nrow()
   stopifnot(possible_duplicates == 0)
   
-  cl_spec <- unique(model_stats$CL_SPEC)
+  cl_spec <- unique(model_stats$CL_spec)
 
   if(re_name){
     IC50_matrix <- model_stats %>%
